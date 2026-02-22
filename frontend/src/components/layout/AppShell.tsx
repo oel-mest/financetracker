@@ -3,9 +3,15 @@ import { Sidebar } from './Sidebar'
 
 export function AppShell() {
   return (
-    <div className="min-h-screen bg-[#0a0a0f]">
+    <div className="min-h-screen" style={{ backgroundColor: 'var(--bg-primary)' }}>
       {/* Background grid */}
-      <div className="fixed inset-0 bg-[linear-gradient(rgba(200,246,93,0.02)_1px,transparent_1px),linear-gradient(90deg,rgba(200,246,93,0.02)_1px,transparent_1px)] bg-[size:48px_48px] pointer-events-none" />
+      <div
+        className="fixed inset-0 pointer-events-none"
+        style={{
+          backgroundImage: `linear-gradient(var(--grid-line) 1px, transparent 1px), linear-gradient(90deg, var(--grid-line) 1px, transparent 1px)`,
+          backgroundSize: '48px 48px',
+        }}
+      />
 
       <Sidebar />
 

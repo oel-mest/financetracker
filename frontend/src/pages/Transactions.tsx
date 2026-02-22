@@ -30,13 +30,13 @@ export default function Transactions() {
   const [bulkLoading,  setBulkLoading]  = useState(false)
 
   // Filters
-  const [search,      setSearch]      = useState('')
-  const [accountId,   setAccountId]   = useState('')
-  const [categoryId,  setCategoryId]  = useState('')
-  const [type,        setType]        = useState('')
-  const [dateFrom,    setDateFrom]    = useState('')
-  const [dateTo,      setDateTo]      = useState('')
-  const [page,        setPage]        = useState(1)
+  const [search,     setSearch]     = useState('')
+  const [accountId,  setAccountId]  = useState('')
+  const [categoryId, setCategoryId] = useState('')
+  const [type,       setType]       = useState('')
+  const [dateFrom,   setDateFrom]   = useState('')
+  const [dateTo,     setDateTo]     = useState('')
+  const [page,       setPage]       = useState(1)
 
   const fetchTransactions = useCallback(async () => {
     setLoading(true)
@@ -106,7 +106,7 @@ export default function Transactions() {
     }
   }
 
-  const allSelected = transactions.length > 0 && selected.size === transactions.length
+  const allSelected  = transactions.length > 0 && selected.size === transactions.length
   const someSelected = selected.size > 0
 
   const accountOptions = [
@@ -125,7 +125,7 @@ export default function Transactions() {
         title="Transactions"
         subtitle={pagination ? `${pagination.total} transactions` : ''}
         action={
-          <div className="flex gap-2">
+          <div className="flex gap-2 items-center">
             {someSelected && (
               <Button variant="danger" onClick={() => setBulkDeleting(true)}>
                 Delete {selected.size} selected
@@ -163,60 +163,77 @@ export default function Transactions() {
               { value: 'credit', label: '↓ Income' },
             ]}
           />
-          <Input
-            type="date"
-            value={dateFrom}
-            onChange={(e) => { setDateFrom(e.target.value); setPage(1) }}
-          />
-          <Input
-            type="date"
-            value={dateTo}
-            onChange={(e) => { setDateTo(e.target.value); setPage(1) }}
-          />
+          <Input type="date" value={dateFrom} onChange={(e) => { setDateFrom(e.target.value); setPage(1) }} />
+          <Input type="date" value={dateTo}   onChange={(e) => { setDateTo(e.target.value);   setPage(1) }} />
         </div>
       </Card>
 
       {/* List */}
-      <Card className="divide-y divide-zinc-800/50">
+      <Card>
         {loading ? (
           <div className="flex items-center justify-center h-40">
-            <div className="w-6 h-6 border-2 border-[#c8f65d] border-t-transparent rounded-full animate-spin" />
+            <div className="w-6 h-6 border-2 border-t-transparent rounded-full animate-spin" style={{ borderColor: 'var(--accent)', borderTopColor: 'transparent' }} />
           </div>
         ) : transactions.length === 0 ? (
           <div className="text-center py-16">
             <p className="text-3xl mb-2">↕</p>
-            <p className="text-white font-medium mb-1">No transactions found</p>
-            <p className="text-zinc-500 text-sm mb-4">Try adjusting your filters or add a new transaction</p>
+            <p className="text-sm font-medium mb-1" style={{ color: 'var(--text-primary)' }}>No transactions found</p>
+            <p className="text-sm mb-4" style={{ color: 'var(--text-muted)' }}>Try adjusting your filters or add a new transaction</p>
             <Button onClick={() => setShowCreate(true)}>+ Add transaction</Button>
           </div>
         ) : (
           <div className="p-2">
-            {/* Select all row */}
-            <div className="flex items-center gap-3 px-3 py-2 mb-1 border-b border-zinc-800">
-              <input
-                type="checkbox"
-                checked={allSelected}
-                onChange={toggleSelectAll}
-                className="w-4 h-4 rounded accent-[#c8f65d] cursor-pointer"
-              />
-              <span className="text-zinc-500 text-xs">
-                {someSelected ? `${selected.size} selected` : `Select all (${transactions.length})`}
-              </span>
+            {/* Always-visible select-all bar */}
+            <div
+              className="flex items-center gap-3 px-3 py-2 mb-1 rounded-lg"
+              style={{ borderBottom: '1px solid var(--border)' }}
+            >
+              <button
+                onClick={toggleSelectAll}
+                className="text-xs px-3 py-1 rounded-md font-medium transition-colors"
+                style={{
+                  backgroundColor: allSelected ? 'var(--accent-muted)' : 'var(--bg-hover)',
+                  color: allSelected ? 'var(--accent)' : 'var(--text-secondary)',
+                  border: '1px solid var(--border)',
+                }}
+              >
+                {allSelected ? '✓ Deselect all' : `Select all (${transactions.length})`}
+              </button>
+              {someSelected && (
+                <span className="text-xs" style={{ color: 'var(--text-muted)' }}>
+                  {selected.size} selected
+                </span>
+              )}
             </div>
 
+            {/* Rows — checkbox reveals on hover via CSS group */}
+            <style>{`
+              .tx-row:hover .tx-checkbox { opacity: 1 !important; }
+            `}</style>
+
             {transactions.map((t) => (
-              <div key={t.id} className="flex items-center gap-2">
-                <input
-                  type="checkbox"
-                  checked={selected.has(t.id)}
-                  onChange={() => toggleSelect(t.id)}
-                  className="w-4 h-4 rounded accent-[#c8f65d] cursor-pointer flex-shrink-0 ml-1"
-                />
-                <div className="flex-1 min-w-0">
+              <div key={t.id} className="tx-row relative">
+                {/* Hover-reveal checkbox */}
+                <div
+                  className="tx-checkbox absolute left-3 top-1/2 -translate-y-1/2 z-10 transition-opacity"
+                  style={{ opacity: selected.has(t.id) ? 1 : 0 }}
+                >
+                  <input
+                    type="checkbox"
+                    checked={selected.has(t.id)}
+                    onChange={() => toggleSelect(t.id)}
+                    className="w-4 h-4 rounded cursor-pointer"
+                    style={{ accentColor: 'var(--accent)' }}
+                    onClick={(e) => e.stopPropagation()}
+                  />
+                </div>
+                <div style={{ paddingLeft: '28px' }}>
                   <TransactionRow
                     transaction={t}
                     onEdit={() => setEditing(t)}
                     onDelete={() => setDeleting(t)}
+                    selected={selected.has(t.id)}
+                    onSelect={() => toggleSelect(t.id)}
                   />
                 </div>
               </div>
@@ -228,24 +245,14 @@ export default function Transactions() {
       {/* Pagination */}
       {pagination && pagination.pages > 1 && (
         <div className="flex items-center justify-between mt-4">
-          <span className="text-zinc-500 text-sm">
+          <span className="text-sm" style={{ color: 'var(--text-muted)' }}>
             Page {pagination.page} of {pagination.pages}
           </span>
           <div className="flex gap-2">
-            <Button
-              variant="secondary"
-              size="sm"
-              disabled={page <= 1}
-              onClick={() => setPage((p) => p - 1)}
-            >
+            <Button variant="secondary" size="sm" disabled={page <= 1} onClick={() => setPage((p) => p - 1)}>
               ← Prev
             </Button>
-            <Button
-              variant="secondary"
-              size="sm"
-              disabled={page >= pagination.pages}
-              onClick={() => setPage((p) => p + 1)}
-            >
+            <Button variant="secondary" size="sm" disabled={page >= pagination.pages} onClick={() => setPage((p) => p + 1)}>
               Next →
             </Button>
           </div>
@@ -280,31 +287,23 @@ export default function Transactions() {
       <Modal open={!!deleting} onClose={() => setDeleting(null)} title="Delete transaction">
         {deleting && (
           <div>
-            <p className="text-zinc-300 text-sm mb-6">
-              Delete <strong className="text-white">{deleting.merchant ?? deleting.description}</strong> — {deleting.amount.toLocaleString('fr-MA', { minimumFractionDigits: 2 })} MAD?
+            <p className="text-sm mb-6" style={{ color: 'var(--text-secondary)' }}>
+              Delete <strong style={{ color: 'var(--text-primary)' }}>{deleting.merchant ?? deleting.description}</strong> — {deleting.amount.toLocaleString('fr-MA', { minimumFractionDigits: 2 })} MAD?
             </p>
             <div className="flex gap-3">
-              <Button variant="danger" className="flex-1 justify-center" onClick={handleDelete}>
-                Delete
-              </Button>
+              <Button variant="danger" className="flex-1 justify-center" onClick={handleDelete}>Delete</Button>
               <Button variant="secondary" onClick={() => setDeleting(null)}>Cancel</Button>
             </div>
           </div>
         )}
       </Modal>
 
-      {/* Bulk delete confirm */}
       <Modal open={bulkDeleting} onClose={() => setBulkDeleting(false)} title="Delete selected">
-        <p className="text-zinc-300 text-sm mb-6">
-          Delete <strong className="text-white">{selected.size} transactions</strong>? This cannot be undone.
+        <p className="text-sm mb-6" style={{ color: 'var(--text-secondary)' }}>
+          Delete <strong style={{ color: 'var(--text-primary)' }}>{selected.size} transactions</strong>? This cannot be undone.
         </p>
         <div className="flex gap-3">
-          <Button
-            variant="danger"
-            className="flex-1 justify-center"
-            onClick={handleBulkDelete}
-            disabled={bulkLoading}
-          >
+          <Button variant="danger" className="flex-1 justify-center" onClick={handleBulkDelete} disabled={bulkLoading}>
             {bulkLoading ? 'Deleting...' : `Delete ${selected.size}`}
           </Button>
           <Button variant="secondary" onClick={() => setBulkDeleting(false)}>Cancel</Button>
