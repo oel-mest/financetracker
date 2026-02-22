@@ -14,7 +14,6 @@ export default function Imports() {
   const { accounts }      = useAccounts()
   const [tab, setTab]     = useState<Tab>('pdf')
   const [exporting, setExporting] = useState(false)
-
   const [exportAccountId, setExportAccountId] = useState('')
 
   const handleExport = async () => {
@@ -50,16 +49,26 @@ export default function Imports() {
         {/* Left: Import */}
         <div className="lg:col-span-2 space-y-4">
           {/* Tab switcher */}
-          <div className="flex rounded-xl border border-zinc-800 overflow-hidden bg-zinc-900/40 p-1 gap-1">
+          <div
+            className="flex rounded-xl overflow-hidden p-1 gap-1"
+            style={{ backgroundColor: 'var(--bg-card)', border: '1px solid var(--border)' }}
+          >
             {(['pdf', 'csv'] as Tab[]).map((t) => (
               <button
                 key={t}
                 onClick={() => setTab(t)}
-                className={`flex-1 py-2 text-sm font-medium rounded-lg transition-all ${
-                  tab === t
-                    ? 'bg-zinc-800 text-white'
-                    : 'text-zinc-500 hover:text-zinc-300'
-                }`}
+                className="flex-1 py-2 text-sm font-medium rounded-lg transition-all"
+                style={tab === t ? {
+                  backgroundColor: 'var(--bg-hover)',
+                  color: 'var(--text-primary)',
+                  border: '1px solid var(--border)',
+                } : {
+                  color: 'var(--text-muted)',
+                  backgroundColor: 'transparent',
+                  border: '1px solid transparent',
+                }}
+                onMouseEnter={(e) => { if (tab !== t) e.currentTarget.style.color = 'var(--text-secondary)' }}
+                onMouseLeave={(e) => { if (tab !== t) e.currentTarget.style.color = 'var(--text-muted)' }}
               >
                 {t === 'pdf' ? '🏦  CIH Bank PDF' : '📄  CSV File'}
               </button>
@@ -75,14 +84,19 @@ export default function Imports() {
         <div className="space-y-4">
           {/* Export */}
           <Card className="p-5">
-            <p className="text-zinc-400 text-xs font-mono uppercase tracking-wider mb-4">
+            <p className="text-xs font-mono uppercase tracking-wider mb-4" style={{ color: 'var(--text-muted)' }}>
               Export CSV
             </p>
             <div className="space-y-3">
               <select
                 value={exportAccountId}
                 onChange={(e) => setExportAccountId(e.target.value)}
-                className="w-full bg-zinc-800/60 border border-zinc-700 rounded-lg px-3 py-2.5 text-white text-sm focus:outline-none focus:border-[#c8f65d] transition-colors"
+                className="w-full rounded-lg px-3 py-2.5 text-sm focus:outline-none transition-colors"
+                style={{
+                  backgroundColor: 'var(--bg-secondary)',
+                  border: '1px solid var(--border)',
+                  color: 'var(--text-primary)',
+                }}
               >
                 <option value="">All accounts</option>
                 {accounts.map((a) => (
@@ -102,7 +116,7 @@ export default function Imports() {
 
           {/* History */}
           <Card className="p-5">
-            <p className="text-zinc-400 text-xs font-mono uppercase tracking-wider mb-4">
+            <p className="text-xs font-mono uppercase tracking-wider mb-4" style={{ color: 'var(--text-muted)' }}>
               Import history
             </p>
             <ImportHistory />
