@@ -228,7 +228,7 @@ function RuleRow({ rule, readOnly, onEdit, onDelete }: RuleRowProps) {
       )}
 
       {rule.is_default && (
-        <Badge className="text-[10px] flex-shrink-0" style={{ color: 'var(--text-muted)' }}>default</Badge>
+        <Badge className="text-[10px] flex-shrink-0">default</Badge>
       )}
 
       <div className="flex-1" />
