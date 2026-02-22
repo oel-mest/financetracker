@@ -1,6 +1,6 @@
 fastapi
 uvicorn
-supabase==2.3.4
+supabase>=2.7.0
 python-dotenv
 pandas
 openbk==1.0.1
