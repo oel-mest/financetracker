@@ -5,5 +5,5 @@ gotrue==2.4.1
 httpx==0.27.0
 python-dotenv==1.0.1
 pandas==2.2.2
-openbk==0.1.4
+openbk==1.0.1
 python-multipart==0.0.9
