@@ -23,23 +23,23 @@
 }
 
 :root.light {
-  --bg-primary:     #f1f5f9;
+  --bg-primary:     #eef2f7;
   --bg-secondary:   #ffffff;
   --bg-card:        #ffffff;
-  --bg-hover:       rgba(15,23,42,0.04);
-  --border:         #e2e8f0;
-  --text-primary:   #0f172a;
-  --text-secondary: #475569;
-  --text-muted:     #94a3b8;
+  --bg-hover:       rgba(15,23,42,0.05);
+  --border:         #c8d6e5;
+  --text-primary:   #0a1628;
+  --text-secondary: #1e3a5f;
+  --text-muted:     #3d6b9e;
   --accent:         #16a34a;
-  --accent-muted:   rgba(22,163,74,0.08);
-  --accent-border:  rgba(22,163,74,0.3);
-  --grid-line:      rgba(0,0,0,0.025);
-  --sidebar-bg:     #1e293b;
-  --sidebar-border: #334155;
-  --sidebar-text:   #94a3b8;
-  --sidebar-muted:  #64748b;
-  --card-shadow:    0 1px 3px rgba(0,0,0,0.08), 0 1px 2px rgba(0,0,0,0.06);
+  --accent-muted:   rgba(22,163,74,0.1);
+  --accent-border:  rgba(74, 75, 74, 0.35);
+  --grid-line:      rgba(0,0,0,0.03);
+  --sidebar-bg:     #0f1f38;
+  --sidebar-border: #1e3a5f;
+  --sidebar-text:   #7eb3e0;
+  --sidebar-muted:  #4a7fa8;
+  --card-shadow:    0 2px 8px rgba(0,0,0,0.08), 0 1px 3px rgba(0,0,0,0.05);
 }
 
 body {

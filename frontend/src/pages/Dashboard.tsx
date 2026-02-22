@@ -28,28 +28,37 @@ export default function Dashboard() {
       {/* Header */}
       <div className="flex items-center justify-between mb-8">
         <div>
-          <h1 className="text-white font-bold text-2xl tracking-tight">Dashboard</h1>
-          <p className="text-zinc-500 text-sm mt-1 capitalize">{fmtMonthLabel(month)}</p>
+          <h1 className="font-bold text-2xl tracking-tight" style={{ color: 'var(--text-primary)' }}>Dashboard</h1>
+          <p className="text-sm mt-1 capitalize" style={{ color: 'var(--text-muted)' }}>{fmtMonthLabel(month)}</p>
         </div>
         {/* Month navigator */}
         <div className="flex items-center gap-2">
           <button
             onClick={() => setMonthOffset((o) => o - 1)}
-            className="w-8 h-8 rounded-lg bg-zinc-800 border border-zinc-700 text-zinc-400 hover:text-white hover:border-zinc-600 transition-colors flex items-center justify-center text-sm"
+            className="w-8 h-8 rounded-lg flex items-center justify-center text-sm transition-colors"
+            style={{ backgroundColor: 'var(--bg-card)', border: '1px solid var(--border)', color: 'var(--text-secondary)' }}
+            onMouseEnter={(e) => { e.currentTarget.style.color = 'var(--text-primary)'; e.currentTarget.style.borderColor = 'var(--text-muted)' }}
+            onMouseLeave={(e) => { e.currentTarget.style.color = 'var(--text-secondary)'; e.currentTarget.style.borderColor = 'var(--border)' }}
           >
             ‹
           </button>
           <button
             onClick={() => setMonthOffset(0)}
             disabled={monthOffset === 0}
-            className="text-xs text-zinc-500 hover:text-[#c8f65d] transition-colors disabled:opacity-30 px-1"
+            className="text-xs px-1 transition-colors disabled:opacity-30"
+            style={{ color: 'var(--text-muted)' }}
+            onMouseEnter={(e) => (e.currentTarget.style.color = 'var(--accent)')}
+            onMouseLeave={(e) => (e.currentTarget.style.color = 'var(--text-muted)')}
           >
             Today
           </button>
           <button
             onClick={() => setMonthOffset((o) => Math.min(o + 1, 0))}
             disabled={monthOffset === 0}
-            className="w-8 h-8 rounded-lg bg-zinc-800 border border-zinc-700 text-zinc-400 hover:text-white hover:border-zinc-600 transition-colors flex items-center justify-center text-sm disabled:opacity-30"
+            className="w-8 h-8 rounded-lg flex items-center justify-center text-sm transition-colors disabled:opacity-30"
+            style={{ backgroundColor: 'var(--bg-card)', border: '1px solid var(--border)', color: 'var(--text-secondary)' }}
+            onMouseEnter={(e) => { e.currentTarget.style.color = 'var(--text-primary)'; e.currentTarget.style.borderColor = 'var(--text-muted)' }}
+            onMouseLeave={(e) => { e.currentTarget.style.color = 'var(--text-secondary)'; e.currentTarget.style.borderColor = 'var(--border)' }}
           >
             ›
           </button>
@@ -57,43 +66,27 @@ export default function Dashboard() {
       </div>
 
       {error && (
-        <div className="bg-red-500/10 border border-red-500/30 text-red-400 text-sm rounded-xl p-4 mb-6">
+        <div className="text-sm rounded-xl p-4 mb-6" style={{ backgroundColor: 'rgba(239,68,68,0.1)', border: '1px solid rgba(239,68,68,0.3)', color: '#f87171' }}>
           {error}
         </div>
       )}
 
       {loading ? (
         <div className="flex items-center justify-center h-64">
-          <div className="w-6 h-6 border-2 border-[#c8f65d] border-t-transparent rounded-full animate-spin" />
+          <div className="w-6 h-6 border-2 border-t-transparent rounded-full animate-spin" style={{ borderColor: 'var(--accent)', borderTopColor: 'transparent' }} />
         </div>
       ) : data ? (
         <div className="space-y-6">
-          {/* Row 1: Summary cards */}
           <SummaryCards summary={data.summary} />
-
-          {/* Row 2: Insights */}
           {insights.length > 0 && <InsightCards insights={insights} />}
-
-          {/* Row 3: Trend + Category */}
           <div className="grid grid-cols-1 lg:grid-cols-5 gap-4">
-            <div className="lg:col-span-3">
-              <TrendChart data={trend} />
-            </div>
-            <div className="lg:col-span-2">
-              <CategoryChart data={data.category_breakdown} />
-            </div>
+            <div className="lg:col-span-3"><TrendChart data={trend} /></div>
+            <div className="lg:col-span-2"><CategoryChart data={data.category_breakdown} /></div>
           </div>
-
-          {/* Row 4: Top merchants + Budgets */}
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
-            <TopMerchants
-              merchants={data.top_merchants}
-              totalSpent={data.summary.total_debit}
-            />
+            <TopMerchants merchants={data.top_merchants} totalSpent={data.summary.total_debit} />
             <BudgetList budgets={data.budgets} />
           </div>
-
-          {/* Row 5: Recent transactions */}
           <RecentTransactions transactions={data.recent_transactions} />
         </div>
       ) : null}
