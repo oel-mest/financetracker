@@ -1,6 +1,6 @@
 <div align="center">
 
-# DRHM. Finance Tracker
+# DRHM.
 
 **A self-hosted personal finance app built for Moroccan banking — track, import, and understand your money.**
 
@@ -71,7 +71,7 @@ Import your CIH Bank PDF statements, track spending by category, set budgets, an
 
 ### 1. Clone the repo
 ```bash
-git clone https://github.com/your-username/drhm-finance.git
+git clone https://github.com/oel-mest/financetracker.git
 cd drhm-finance
 ```
 
