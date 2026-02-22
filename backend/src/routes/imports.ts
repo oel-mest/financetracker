@@ -250,6 +250,7 @@ router.post('/:id/confirm', async (req: AuthRequest, res: Response) => {
       .select('id')
 
     if (error) {
+      console.error('BATCH ERROR code:', error.code, 'message:', error.message)
       if (error.code === '23505') { skipped += batch.length }
       else { res.status(500).json({ error: error.message }); return }
     } else {
