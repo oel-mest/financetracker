@@ -1,28 +1,24 @@
 import { useState, useRef } from 'react'
 import { api }           from '../../lib/api'
-import { supabase }      from '../../lib/supabase'
 import { Button }        from '../ui/Button'
 import { Select }        from '../ui/Select'
 import { useAccounts }   from '../../hooks/useAccounts'
 import { ImportPreview } from './ImportPreview'
-import { useAuth }       from '../../context/AuthContext'
 
 type Step = 'upload' | 'preview' | 'done'
 
 export function PdfImport() {
   const { accounts } = useAccounts()
-  const { user }     = useAuth()
   const fileRef      = useRef<HTMLInputElement>(null)
 
-  const [step,        setStep]        = useState<Step>('upload')
-  const [accountId,   setAccountId]   = useState('')
-  const [year,        setYear]        = useState(String(new Date().getFullYear()))
-  const [loading,     setLoading]     = useState(false)
-  const [uploadPct,   setUploadPct]   = useState(0)
-  const [error,       setError]       = useState('')
-  const [importId,    setImportId]    = useState('')
-  const [preview,     setPreview]     = useState<any[]>([])
-  const [result,      setResult]      = useState<{ inserted: number; skipped: number } | null>(null)
+  const [step,      setStep]      = useState<Step>('upload')
+  const [accountId, setAccountId] = useState('')
+  const [year,      setYear]      = useState(String(new Date().getFullYear()))
+  const [loading,   setLoading]   = useState(false)
+  const [error,     setError]     = useState('')
+  const [importId,  setImportId]  = useState('')
+  const [preview,   setPreview]   = useState<any[]>([])
+  const [result,    setResult]    = useState<{ inserted: number; skipped: number } | null>(null)
 
   const accountOptions = [
     { value: '', label: 'Select account...' },
@@ -39,33 +35,20 @@ export function PdfImport() {
     const file = fileRef.current?.files?.[0]
     if (!file)      { setError('Please select a PDF file'); return }
     if (!accountId) { setError('Please select an account'); return }
-    if (!user)      { setError('Not authenticated'); return }
 
     setLoading(true)
     setError('')
-    setUploadPct(0)
 
     try {
-      // 1. Upload PDF to Supabase Storage
-      const storagePath = `${user.id}/${Date.now()}_${file.name}`
-      const { error: uploadError } = await supabase.storage
-        .from('imports')
-        .upload(storagePath, file, {
-          contentType: 'application/pdf',
-          upsert: false,
-        })
+      const form = new FormData()
+      form.append('file',       file)
+      form.append('account_id', accountId)
+      form.append('year',       year)
 
-      if (uploadError) throw new Error(`Storage upload failed: ${uploadError.message}`)
-      setUploadPct(50)
-
-      // 2. Call backend to parse
-      const { data } = await api.post('/imports/pdf', {
-        account_id:   accountId,
-        storage_path: storagePath,
-        year:         parseInt(year),
+      const { data } = await api.post('/imports/pdf', form, {
+        headers: { 'Content-Type': 'multipart/form-data' },
       })
 
-      setUploadPct(100)
       setImportId(data.import_id)
       setPreview(data.transactions)
       setStep('preview')
@@ -73,7 +56,6 @@ export function PdfImport() {
       setError(err.response?.data?.error ?? err.message ?? 'Upload failed')
     } finally {
       setLoading(false)
-      setUploadPct(0)
     }
   }
 
@@ -145,18 +127,10 @@ export function PdfImport() {
         </div>
       </div>
 
-      {loading && uploadPct > 0 && (
-        <div>
-          <div className="flex justify-between text-xs text-zinc-400 mb-1">
-            <span>{uploadPct < 50 ? 'Uploading to storage...' : 'Parsing with openbk...'}</span>
-            <span>{uploadPct}%</span>
-          </div>
-          <div className="h-1.5 bg-zinc-800 rounded-full overflow-hidden">
-            <div
-              className="h-full bg-[#c8f65d] rounded-full transition-all duration-500"
-              style={{ width: `${uploadPct}%` }}
-            />
-          </div>
+      {loading && (
+        <div className="flex items-center gap-3 text-zinc-400 text-sm">
+          <div className="w-4 h-4 border-2 border-[#c8f65d] border-t-transparent rounded-full animate-spin flex-shrink-0" />
+          Uploading & parsing... this may take 30-60 seconds
         </div>
       )}
 
