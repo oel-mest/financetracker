@@ -10,7 +10,7 @@ services:
         VITE_SUPABASE_ANON_KEY: ${VITE_SUPABASE_ANON_KEY}
         VITE_API_URL:           ${VITE_API_URL:-http://localhost:2027}
     ports:
-      - "2026:2026"
+      - "127.0.0.1:2026:2026"
     depends_on:
       backend:
         condition: service_healthy
@@ -27,7 +27,7 @@ services:
       context: ./backend
       dockerfile: Dockerfile
     ports:
-      - "2027:2027"
+      - "127.0.0.1:2027:2027"
     environment:
       SUPABASE_URL:              ${SUPABASE_URL}
       SUPABASE_SERVICE_ROLE_KEY: ${SUPABASE_SERVICE_ROLE_KEY}
@@ -51,7 +51,7 @@ services:
       context: ./parser
       dockerfile: Dockerfile
     ports:
-      - "2028:2028"
+      - "127.0.0.1:2028:2028"
     environment:
       SUPABASE_URL:              ${SUPABASE_URL}
       SUPABASE_SERVICE_ROLE_KEY: ${SUPABASE_SERVICE_ROLE_KEY}
