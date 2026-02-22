@@ -29,7 +29,6 @@ export default function Transactions() {
   const [bulkDeleting, setBulkDeleting] = useState(false)
   const [bulkLoading,  setBulkLoading]  = useState(false)
 
-  // Filters
   const [search,     setSearch]     = useState('')
   const [accountId,  setAccountId]  = useState('')
   const [categoryId, setCategoryId] = useState('')
@@ -121,6 +120,14 @@ export default function Transactions() {
 
   return (
     <div>
+      {/* Inject hover CSS once */}
+      <style>{`
+        .tx-row .tx-cb { opacity: 0; transition: opacity 0.15s; }
+        .tx-row:hover .tx-cb { opacity: 1; }
+        .tx-cb.is-checked { opacity: 1 !important; }
+        .show-all-cb .tx-cb { opacity: 1 !important; }
+      `}</style>
+
       <PageHeader
         title="Transactions"
         subtitle={pagination ? `${pagination.total} transactions` : ''}
@@ -139,30 +146,14 @@ export default function Transactions() {
       {/* Filters */}
       <Card className="p-4 mb-6">
         <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-3">
-          <Input
-            placeholder="Search..."
-            value={search}
-            onChange={(e) => { setSearch(e.target.value); setPage(1) }}
-          />
-          <Select
-            value={accountId}
-            onChange={(e) => { setAccountId(e.target.value); setPage(1) }}
-            options={accountOptions}
-          />
-          <Select
-            value={categoryId}
-            onChange={(e) => { setCategoryId(e.target.value); setPage(1) }}
-            options={categoryOptions}
-          />
-          <Select
-            value={type}
-            onChange={(e) => { setType(e.target.value); setPage(1) }}
-            options={[
-              { value: '', label: 'All types' },
-              { value: 'debit',  label: '↑ Expense' },
-              { value: 'credit', label: '↓ Income' },
-            ]}
-          />
+          <Input placeholder="Search..." value={search} onChange={(e) => { setSearch(e.target.value); setPage(1) }} />
+          <Select value={accountId}  onChange={(e) => { setAccountId(e.target.value);  setPage(1) }} options={accountOptions} />
+          <Select value={categoryId} onChange={(e) => { setCategoryId(e.target.value); setPage(1) }} options={categoryOptions} />
+          <Select value={type} onChange={(e) => { setType(e.target.value); setPage(1) }} options={[
+            { value: '', label: 'All types' },
+            { value: 'debit',  label: '↑ Expense' },
+            { value: 'credit', label: '↓ Income' },
+          ]} />
           <Input type="date" value={dateFrom} onChange={(e) => { setDateFrom(e.target.value); setPage(1) }} />
           <Input type="date" value={dateTo}   onChange={(e) => { setDateTo(e.target.value);   setPage(1) }} />
         </div>
@@ -184,10 +175,7 @@ export default function Transactions() {
         ) : (
           <div className="p-2">
             {/* Always-visible select-all bar */}
-            <div
-              className="flex items-center gap-3 px-3 py-2 mb-1 rounded-lg"
-              style={{ borderBottom: '1px solid var(--border)' }}
-            >
+            <div className="flex items-center gap-3 px-3 py-2 mb-1" style={{ borderBottom: '1px solid var(--border)' }}>
               <button
                 onClick={toggleSelectAll}
                 className="text-xs px-3 py-1 rounded-md font-medium transition-colors"
@@ -206,38 +194,42 @@ export default function Transactions() {
               )}
             </div>
 
-            {/* Rows — checkbox reveals on hover via CSS group */}
-            <style>{`
-              .tx-row:hover .tx-checkbox { opacity: 1 !important; }
-            `}</style>
-
-            {transactions.map((t) => (
-              <div key={t.id} className="tx-row relative">
-                {/* Hover-reveal checkbox */}
-                <div
-                  className="tx-checkbox absolute left-3 top-1/2 -translate-y-1/2 z-10 transition-opacity"
-                  style={{ opacity: selected.has(t.id) ? 1 : 0 }}
-                >
-                  <input
-                    type="checkbox"
-                    checked={selected.has(t.id)}
-                    onChange={() => toggleSelect(t.id)}
-                    className="w-4 h-4 rounded cursor-pointer"
-                    style={{ accentColor: 'var(--accent)' }}
-                    onClick={(e) => e.stopPropagation()}
-                  />
-                </div>
-                <div style={{ paddingLeft: '28px' }}>
-                  <TransactionRow
-                    transaction={t}
-                    onEdit={() => setEditing(t)}
-                    onDelete={() => setDeleting(t)}
-                    selected={selected.has(t.id)}
-                    onSelect={() => toggleSelect(t.id)}
-                  />
-                </div>
-              </div>
-            ))}
+            {/* Rows */}
+            <div className={someSelected ? 'show-all-cb' : ''}>
+              {transactions.map((t) => {
+                const isSelected = selected.has(t.id)
+                return (
+                  <div
+                    key={t.id}
+                    className="tx-row flex items-center gap-2 px-1 rounded-lg"
+                    style={{
+                      backgroundColor: isSelected ? 'var(--accent-muted)' : 'transparent',
+                      border: isSelected ? '1px solid var(--accent-border)' : '1px solid transparent',
+                      marginBottom: '2px',
+                    }}
+                  >
+                    {/* Single checkbox — hover reveal or always visible when someSelected */}
+                    <div className={`tx-cb flex-shrink-0 pl-1 ${isSelected ? 'is-checked' : ''}`}>
+                      <input
+                        type="checkbox"
+                        checked={isSelected}
+                        onChange={() => toggleSelect(t.id)}
+                        className="w-4 h-4 rounded cursor-pointer"
+                        style={{ accentColor: 'var(--accent)' }}
+                        onClick={(e) => e.stopPropagation()}
+                      />
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <TransactionRow
+                        transaction={t}
+                        onEdit={() => setEditing(t)}
+                        onDelete={() => setDeleting(t)}
+                      />
+                    </div>
+                  </div>
+                )
+              })}
+            </div>
           </div>
         )}
       </Card>
@@ -249,12 +241,8 @@ export default function Transactions() {
             Page {pagination.page} of {pagination.pages}
           </span>
           <div className="flex gap-2">
-            <Button variant="secondary" size="sm" disabled={page <= 1} onClick={() => setPage((p) => p - 1)}>
-              ← Prev
-            </Button>
-            <Button variant="secondary" size="sm" disabled={page >= pagination.pages} onClick={() => setPage((p) => p + 1)}>
-              Next →
-            </Button>
+            <Button variant="secondary" size="sm" disabled={page <= 1}              onClick={() => setPage((p) => p - 1)}>← Prev</Button>
+            <Button variant="secondary" size="sm" disabled={page >= pagination.pages} onClick={() => setPage((p) => p + 1)}>Next →</Button>
           </div>
         </div>
       )}

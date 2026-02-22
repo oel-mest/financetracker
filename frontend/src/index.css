@@ -18,17 +18,17 @@
 }
 
 :root.light {
-  --bg-primary:    #f4f4f5;
+  --bg-primary:    #f1f5f9;
   --bg-secondary:  #ffffff;
   --bg-card:       #ffffff;
   --bg-hover:      rgba(0,0,0,0.04);
-  --border:        #e4e4e7;
-  --text-primary:  #09090b;
-  --text-secondary:#52525b;
-  --text-muted:    #a1a1aa;
-  --accent:        #65a30d;
-  --accent-muted:  rgba(101,163,13,0.1);
-  --accent-border: rgba(101,163,13,0.2);
+  --border:        #e2e8f0;
+  --text-primary:  #1e293b;
+  --text-secondary:#475569;
+  --text-muted:    #94a3b8;
+  --accent:        #16a34a;
+  --accent-muted:  rgba(22,163,74,0.08);
+  --accent-border: rgba(22,163,74,0.25);
   --grid-line:     rgba(0,0,0,0.03);
 }
 

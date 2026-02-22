@@ -17,52 +17,17 @@ interface TransactionRowProps {
   transaction: Transaction
   onEdit:      () => void
   onDelete:    () => void
-  selected?:   boolean
-  onSelect?:   () => void
 }
 
-export function TransactionRow({ transaction: t, onEdit, onDelete, selected = false, onSelect }: TransactionRowProps) {
+export function TransactionRow({ transaction: t, onEdit, onDelete }: TransactionRowProps) {
   const isDebit = t.type === 'debit'
 
   return (
     <div
-      className="flex items-center gap-3 px-3 py-3 rounded-lg transition-colors group relative"
-      style={{
-        backgroundColor: selected ? 'var(--accent-muted)' : 'transparent',
-        border: selected ? '1px solid var(--accent-border)' : '1px solid transparent',
-      }}
-      onMouseEnter={(e) => {
-        if (!selected) e.currentTarget.style.backgroundColor = 'var(--bg-hover)'
-      }}
-      onMouseLeave={(e) => {
-        if (!selected) e.currentTarget.style.backgroundColor = 'transparent'
-      }}
+      className="flex items-center gap-4 px-4 py-3 rounded-lg transition-colors group"
+      onMouseEnter={(e) => (e.currentTarget.style.backgroundColor = 'var(--bg-hover)')}
+      onMouseLeave={(e) => (e.currentTarget.style.backgroundColor = 'transparent')}
     >
-      {/* Hover-reveal checkbox */}
-      <div
-        className="flex-shrink-0 transition-opacity"
-        style={{
-          width: '16px',
-          opacity: selected ? 1 : 0,
-        }}
-        onMouseEnter={(e) => {
-          const parent = e.currentTarget.closest('.group') as HTMLElement
-          if (parent) {
-            const cb = e.currentTarget as HTMLElement
-            cb.style.opacity = '1'
-          }
-        }}
-      >
-        <input
-          type="checkbox"
-          checked={selected}
-          onChange={onSelect}
-          className="w-4 h-4 rounded cursor-pointer"
-          style={{ accentColor: 'var(--accent)' }}
-          onClick={(e) => e.stopPropagation()}
-        />
-      </div>
-
       {/* Category icon */}
       <div
         className="w-9 h-9 rounded-lg flex items-center justify-center text-base flex-shrink-0"
@@ -94,13 +59,14 @@ export function TransactionRow({ transaction: t, onEdit, onDelete, selected = fa
 
       {/* Amount */}
       <div className="text-right flex-shrink-0">
-        <p className={`text-sm font-semibold ${isDebit ? 'text-red-400' : ''}`} style={!isDebit ? { color: 'var(--accent)' } : {}}>
+        <p className={`text-sm font-semibold ${isDebit ? 'text-red-400' : ''}`}
+           style={!isDebit ? { color: 'var(--accent)' } : {}}>
           {isDebit ? '−' : '+'}{t.amount.toLocaleString('fr-MA', { minimumFractionDigits: 2 })} MAD
         </p>
         <p className="text-xs" style={{ color: 'var(--text-muted)' }}>{t.accounts?.name}</p>
       </div>
 
-      {/* Actions — visible on hover */}
+      {/* Actions */}
       <div className="flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity flex-shrink-0">
         <button
           onClick={onEdit}
