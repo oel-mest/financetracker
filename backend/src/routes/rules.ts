@@ -1,6 +1,7 @@
 import { Router, Response } from 'express'
 import { z } from 'zod'
 import { supabase } from '../lib/supabase'
+import { autoCategorize } from '../lib/autoCategorize'
 import { AuthRequest } from '../types'
 
 const router = Router()
@@ -13,7 +14,7 @@ const RuleSchema = z.object({
 
 const UpdateRuleSchema = RuleSchema.partial().omit({ category_id: true })
 
-// GET /rules — returns default + user's own rules
+// GET /rules
 router.get('/', async (req: AuthRequest, res: Response) => {
   const { data, error } = await supabase
     .from('categorization_rules')
@@ -26,11 +27,10 @@ router.get('/', async (req: AuthRequest, res: Response) => {
   res.json(data)
 })
 
-// POST /rules — create custom rule
+// POST /rules
 router.post('/', async (req: AuthRequest, res: Response) => {
   const body = RuleSchema.parse(req.body)
 
-  // Verify category exists and is accessible
   const { data: category } = await supabase
     .from('categories')
     .select('id')
@@ -50,7 +50,44 @@ router.post('/', async (req: AuthRequest, res: Response) => {
   res.status(201).json(data)
 })
 
-// PATCH /rules/:id — only own, non-default rules
+// POST /rules/apply — apply all rules to existing transactions
+router.post('/apply', async (req: AuthRequest, res: Response) => {
+  const userId = req.user!.id
+
+  // Fetch all user transactions
+  const { data: transactions, error: txError } = await supabase
+    .from('transactions')
+    .select('id, description, merchant')
+    .eq('user_id', userId)
+
+  if (txError) { res.status(500).json({ error: txError.message }); return }
+  if (!transactions || transactions.length === 0) {
+    res.json({ updated: 0, skipped: 0 })
+    return
+  }
+
+  let updated = 0
+  let skipped = 0
+
+  for (const tx of transactions) {
+    const text = `${tx.description} ${tx.merchant ?? ''}`
+    const category_id = await autoCategorize(userId, text)
+
+    if (!category_id) { skipped++; continue }
+
+    const { error } = await supabase
+      .from('transactions')
+      .update({ category_id })
+      .eq('id', tx.id)
+      .eq('user_id', userId)
+
+    if (error) { skipped++ } else { updated++ }
+  }
+
+  res.json({ updated, skipped })
+})
+
+// PATCH /rules/:id
 router.patch('/:id', async (req: AuthRequest, res: Response) => {
   const body = UpdateRuleSchema.parse(req.body)
 
@@ -75,7 +112,7 @@ router.patch('/:id', async (req: AuthRequest, res: Response) => {
   res.json(data)
 })
 
-// DELETE /rules/:id — only own, non-default rules
+// DELETE /rules/:id
 router.delete('/:id', async (req: AuthRequest, res: Response) => {
   const { data: existing } = await supabase
     .from('categorization_rules')

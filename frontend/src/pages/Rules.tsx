@@ -18,12 +18,14 @@ interface Rule {
 }
 
 export default function Rules() {
-  const [rules,      setRules]      = useState<Rule[]>([])
-  const [loading,    setLoading]    = useState(true)
-  const [showCreate, setShowCreate] = useState(false)
-  const [editing,    setEditing]    = useState<Rule | null>(null)
-  const [deleting,   setDeleting]   = useState<Rule | null>(null)
+  const [rules,       setRules]       = useState<Rule[]>([])
+  const [loading,     setLoading]     = useState(true)
+  const [showCreate,  setShowCreate]  = useState(false)
+  const [editing,     setEditing]     = useState<Rule | null>(null)
+  const [deleting,    setDeleting]    = useState<Rule | null>(null)
   const [showDefault, setShowDefault] = useState(false)
+  const [applying,    setApplying]    = useState(false)
+  const [applyResult, setApplyResult] = useState<{ updated: number; skipped: number } | null>(null)
 
   const fetchRules = useCallback(async () => {
     setLoading(true)
@@ -55,6 +57,17 @@ export default function Rules() {
     fetchRules()
   }
 
+  const handleApply = async () => {
+    setApplying(true)
+    setApplyResult(null)
+    try {
+      const { data } = await api.post('/rules/apply')
+      setApplyResult(data)
+    } finally {
+      setApplying(false)
+    }
+  }
+
   const userRules    = rules.filter((r) => !r.is_default)
   const defaultRules = rules.filter((r) =>  r.is_default)
 
@@ -63,37 +76,62 @@ export default function Rules() {
       <PageHeader
         title="Categorization Rules"
         subtitle="Keywords that auto-assign categories to transactions"
-        action={<Button onClick={() => setShowCreate(true)}>+ New rule</Button>}
+        action={
+          <div className="flex gap-2">
+            <Button
+              variant="secondary"
+              onClick={handleApply}
+              disabled={applying}
+            >
+              {applying ? 'Applying...' : '⚡ Apply to existing'}
+            </Button>
+            <Button onClick={() => setShowCreate(true)}>+ New rule</Button>
+          </div>
+        }
       />
+
+      {/* Apply result banner */}
+      {applyResult && (
+        <div
+          className="flex items-center justify-between px-4 py-3 rounded-xl mb-6 text-sm"
+          style={{ backgroundColor: 'var(--accent-muted)', border: '1px solid var(--accent-border)' }}
+        >
+          <span style={{ color: 'var(--accent)' }}>
+            ✓ Updated <strong>{applyResult.updated}</strong> transactions · <strong>{applyResult.skipped}</strong> skipped
+          </span>
+          <button
+            onClick={() => setApplyResult(null)}
+            className="text-xs"
+            style={{ color: 'var(--text-muted)' }}
+          >✕</button>
+        </div>
+      )}
 
       {loading ? (
         <div className="flex items-center justify-center h-40">
-          <div className="w-6 h-6 border-2 border-[#c8f65d] border-t-transparent rounded-full animate-spin" />
+          <div className="w-6 h-6 border-2 border-t-transparent rounded-full animate-spin" style={{ borderColor: 'var(--accent)', borderTopColor: 'transparent' }} />
         </div>
       ) : (
         <div className="space-y-6">
           {/* User rules */}
           <div>
-            <p className="text-zinc-400 text-xs font-mono uppercase tracking-wider mb-3">
+            <p className="text-xs font-mono uppercase tracking-wider mb-3" style={{ color: 'var(--text-muted)' }}>
               Your rules ({userRules.length})
             </p>
             {userRules.length === 0 ? (
               <Card className="p-8 text-center">
-                <p className="text-zinc-500 text-sm mb-3">No custom rules yet.</p>
-                <p className="text-zinc-600 text-xs mb-4">
+                <p className="text-sm mb-3" style={{ color: 'var(--text-secondary)' }}>No custom rules yet.</p>
+                <p className="text-xs mb-4" style={{ color: 'var(--text-muted)' }}>
                   Create rules to automatically categorize transactions by keyword.
                 </p>
                 <Button onClick={() => setShowCreate(true)}>+ New rule</Button>
               </Card>
             ) : (
-              <Card className="divide-y divide-zinc-800/50">
-                {userRules.map((rule) => (
-                  <RuleRow
-                    key={rule.id}
-                    rule={rule}
-                    onEdit={() => setEditing(rule)}
-                    onDelete={() => setDeleting(rule)}
-                  />
+              <Card>
+                {userRules.map((rule, i) => (
+                  <div key={rule.id} style={i > 0 ? { borderTop: '1px solid var(--border)' } : {}}>
+                    <RuleRow rule={rule} onEdit={() => setEditing(rule)} onDelete={() => setDeleting(rule)} />
+                  </div>
                 ))}
               </Card>
             )}
@@ -103,16 +141,21 @@ export default function Rules() {
           <div>
             <button
               onClick={() => setShowDefault((v) => !v)}
-              className="text-zinc-500 text-xs font-mono uppercase tracking-wider hover:text-zinc-300 transition-colors flex items-center gap-2 mb-3"
+              className="text-xs font-mono uppercase tracking-wider transition-colors flex items-center gap-2 mb-3"
+              style={{ color: 'var(--text-muted)' }}
+              onMouseEnter={(e) => (e.currentTarget.style.color = 'var(--text-secondary)')}
+              onMouseLeave={(e) => (e.currentTarget.style.color = 'var(--text-muted)')}
             >
               <span>{showDefault ? '▾' : '▸'}</span>
               Default rules ({defaultRules.length}) — read only
             </button>
 
             {showDefault && (
-              <Card className="divide-y divide-zinc-800/50">
-                {defaultRules.map((rule) => (
-                  <RuleRow key={rule.id} rule={rule} readOnly />
+              <Card>
+                {defaultRules.map((rule, i) => (
+                  <div key={rule.id} style={i > 0 ? { borderTop: '1px solid var(--border)' } : {}}>
+                    <RuleRow rule={rule} readOnly />
+                  </div>
                 ))}
               </Card>
             )}
@@ -126,19 +169,15 @@ export default function Rules() {
 
       <Modal open={!!editing} onClose={() => setEditing(null)} title="Edit rule">
         {editing && (
-          <RuleForm
-            initial={editing}
-            onSubmit={handleUpdate}
-            onCancel={() => setEditing(null)}
-          />
+          <RuleForm initial={editing} onSubmit={handleUpdate} onCancel={() => setEditing(null)} />
         )}
       </Modal>
 
       <Modal open={!!deleting} onClose={() => setDeleting(null)} title="Delete rule">
         {deleting && (
           <div>
-            <p className="text-zinc-300 text-sm mb-6">
-              Delete rule for keyword <strong className="text-white">"{deleting.keyword}"</strong>?
+            <p className="text-sm mb-6" style={{ color: 'var(--text-secondary)' }}>
+              Delete rule for keyword <strong style={{ color: 'var(--text-primary)' }}>"{deleting.keyword}"</strong>?
             </p>
             <div className="flex gap-3">
               <Button variant="danger" className="flex-1 justify-center" onClick={handleDelete}>Delete</Button>
@@ -151,8 +190,6 @@ export default function Rules() {
   )
 }
 
-// ── Rule row component ────────────────────────────────────────────────────────
-
 interface RuleRowProps {
   rule:      Rule
   readOnly?: boolean
@@ -162,54 +199,56 @@ interface RuleRowProps {
 
 function RuleRow({ rule, readOnly, onEdit, onDelete }: RuleRowProps) {
   return (
-    <div className="flex items-center gap-4 px-4 py-3 hover:bg-zinc-800/20 transition-colors group">
-      {/* Priority badge */}
-      <span className="text-zinc-600 text-xs font-mono w-6 text-center flex-shrink-0">
+    <div
+      className="flex items-center gap-4 px-4 py-3 transition-colors group"
+      onMouseEnter={(e) => (e.currentTarget.style.backgroundColor = 'var(--bg-hover)')}
+      onMouseLeave={(e) => (e.currentTarget.style.backgroundColor = 'transparent')}
+    >
+      <span className="text-xs font-mono w-6 text-center flex-shrink-0" style={{ color: 'var(--text-muted)' }}>
         {rule.priority}
       </span>
 
-      {/* Keyword */}
-      <code className="text-[#c8f65d] text-xs bg-[#c8f65d]/10 border border-[#c8f65d]/20 px-2 py-0.5 rounded flex-shrink-0">
+      <code
+        className="text-xs px-2 py-0.5 rounded flex-shrink-0"
+        style={{ color: 'var(--accent)', backgroundColor: 'var(--accent-muted)', border: '1px solid var(--accent-border)' }}
+      >
         {rule.keyword}
       </code>
 
-      {/* Match field */}
-      <span className="text-zinc-600 text-xs flex-shrink-0">
+      <span className="text-xs flex-shrink-0" style={{ color: 'var(--text-muted)' }}>
         in {rule.match_field}
       </span>
 
-      {/* Arrow */}
-      <span className="text-zinc-700 text-xs">→</span>
+      <span className="text-xs" style={{ color: 'var(--border)' }}>→</span>
 
-      {/* Category */}
       {rule.categories && (
         <Badge color={rule.categories.color ?? undefined} className="flex-shrink-0">
           {rule.categories.icon} {rule.categories.name}
         </Badge>
       )}
 
-      {/* Default badge */}
       {rule.is_default && (
-        <Badge className="text-[10px] text-zinc-500 border-zinc-700 flex-shrink-0">default</Badge>
+        <Badge className="text-[10px] flex-shrink-0" style={{ color: 'var(--text-muted)' }}>default</Badge>
       )}
 
       <div className="flex-1" />
 
-      {/* Actions */}
       {!readOnly && (
         <div className="flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
           <button
             onClick={onEdit}
-            className="text-zinc-500 hover:text-white text-xs px-2 py-1 rounded hover:bg-zinc-700 transition-colors"
-          >
-            Edit
-          </button>
+            className="text-xs px-2 py-1 rounded transition-colors"
+            style={{ color: 'var(--text-muted)' }}
+            onMouseEnter={(e) => { e.currentTarget.style.color = 'var(--text-primary)'; e.currentTarget.style.backgroundColor = 'var(--bg-hover)' }}
+            onMouseLeave={(e) => { e.currentTarget.style.color = 'var(--text-muted)'; e.currentTarget.style.backgroundColor = 'transparent' }}
+          >Edit</button>
           <button
             onClick={onDelete}
-            className="text-zinc-500 hover:text-red-400 text-xs px-2 py-1 rounded hover:bg-red-500/10 transition-colors"
-          >
-            Del
-          </button>
+            className="text-xs px-2 py-1 rounded transition-colors"
+            style={{ color: 'var(--text-muted)' }}
+            onMouseEnter={(e) => { e.currentTarget.style.color = '#f87171'; e.currentTarget.style.backgroundColor = 'rgba(239,68,68,0.05)' }}
+            onMouseLeave={(e) => { e.currentTarget.style.color = 'var(--text-muted)'; e.currentTarget.style.backgroundColor = 'transparent' }}
+          >Del</button>
         </div>
       )}
     </div>
