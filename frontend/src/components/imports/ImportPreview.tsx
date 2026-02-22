@@ -25,7 +25,6 @@ export function ImportPreview({ importId, rows, onConfirmed, onCancel }: ImportP
   const [loading,  setLoading]  = useState(false)
   const [error,    setError]    = useState('')
   const [selected, setSelected] = useState<Set<number>>(
-    // pre-select all non-duplicates
     new Set(rows.map((_, i) => i).filter((i) => !rows[i].is_duplicate))
   )
 
@@ -66,59 +65,59 @@ export function ImportPreview({ importId, rows, onConfirmed, onCancel }: ImportP
   return (
     <div>
       {/* Stats bar */}
-      <div className="flex items-center gap-4 mb-4 p-3 bg-zinc-800/40 rounded-lg text-xs">
-        <span className="text-zinc-400">
-          <span className="text-white font-medium">{rows.length}</span> rows parsed
+      <div className="flex items-center gap-4 mb-4 p-3 rounded-lg text-xs" style={{ backgroundColor: 'var(--bg-hover)', border: '1px solid var(--border)' }}>
+        <span style={{ color: 'var(--text-secondary)' }}>
+          <span className="font-medium" style={{ color: 'var(--text-primary)' }}>{rows.length}</span> rows parsed
         </span>
         {dupeCount > 0 && (
-          <span className="text-yellow-400">
+          <span style={{ color: '#f59e0b' }}>
             <span className="font-medium">{dupeCount}</span> duplicates skipped
           </span>
         )}
-        <span className="text-[#c8f65d]">
+        <span style={{ color: 'var(--accent)' }}>
           <span className="font-medium">{selectedCount}</span> selected to import
         </span>
       </div>
 
       {error && (
-        <div className="bg-red-500/10 border border-red-500/30 text-red-400 text-sm rounded-lg p-3 mb-4">
+        <div className="text-sm rounded-lg p-3 mb-4" style={{ backgroundColor: 'rgba(239,68,68,0.1)', border: '1px solid rgba(239,68,68,0.3)', color: '#f87171' }}>
           {error}
         </div>
       )}
 
       {/* Table */}
-      <div className="border border-zinc-800 rounded-xl overflow-hidden mb-4">
+      <div className="rounded-xl overflow-hidden mb-4" style={{ border: '1px solid var(--border)' }}>
         <div className="overflow-x-auto max-h-96">
           <table className="w-full text-xs">
-            <thead className="bg-zinc-800/60 sticky top-0">
+            <thead className="sticky top-0" style={{ backgroundColor: 'var(--bg-secondary)' }}>
               <tr>
                 <th className="w-8 px-3 py-2.5">
                   <input
                     type="checkbox"
                     checked={selectedCount > 0 && selectedCount === rows.filter(r => !r.is_duplicate).length}
                     onChange={toggleAll}
-                    className="accent-[#c8f65d]"
+                    style={{ accentColor: 'var(--accent)' }}
                   />
                 </th>
-                <th className="text-left px-3 py-2.5 text-zinc-400 font-medium">Date</th>
-                <th className="text-left px-3 py-2.5 text-zinc-400 font-medium">Description</th>
-                <th className="text-left px-3 py-2.5 text-zinc-400 font-medium">Merchant</th>
-                <th className="text-left px-3 py-2.5 text-zinc-400 font-medium">Category</th>
-                <th className="text-right px-3 py-2.5 text-zinc-400 font-medium">Amount</th>
-                <th className="text-center px-3 py-2.5 text-zinc-400 font-medium">Status</th>
+                {['Date', 'Description', 'Merchant', 'Category', 'Amount', 'Status'].map((h) => (
+                  <th key={h} className={`px-3 py-2.5 font-medium ${h === 'Amount' ? 'text-right' : h === 'Status' ? 'text-center' : 'text-left'}`} style={{ color: 'var(--text-muted)' }}>{h}</th>
+                ))}
               </tr>
             </thead>
-            <tbody className="divide-y divide-zinc-800/50">
+            <tbody>
               {rows.map((row, i) => (
                 <tr
                   key={i}
-                  className={`transition-colors ${
-                    row.is_duplicate
-                      ? 'opacity-40 bg-yellow-500/5'
+                  className="transition-colors"
+                  style={{
+                    borderTop: '1px solid var(--border)',
+                    opacity: row.is_duplicate ? 0.4 : 1,
+                    backgroundColor: row.is_duplicate
+                      ? 'rgba(234,179,8,0.03)'
                       : selected.has(i)
-                      ? 'bg-[#c8f65d]/5'
-                      : 'hover:bg-zinc-800/20'
-                  }`}
+                      ? 'var(--accent-muted)'
+                      : 'transparent',
+                  }}
                 >
                   <td className="px-3 py-2 text-center">
                     <input
@@ -126,12 +125,12 @@ export function ImportPreview({ importId, rows, onConfirmed, onCancel }: ImportP
                       checked={selected.has(i)}
                       disabled={row.is_duplicate}
                       onChange={() => toggle(i)}
-                      className="accent-[#c8f65d]"
+                      style={{ accentColor: 'var(--accent)' }}
                     />
                   </td>
-                  <td className="px-3 py-2 text-zinc-400 whitespace-nowrap">{row.date}</td>
-                  <td className="px-3 py-2 text-white max-w-[200px] truncate">{row.description}</td>
-                  <td className="px-3 py-2 text-zinc-300">{row.merchant ?? '—'}</td>
+                  <td className="px-3 py-2 whitespace-nowrap" style={{ color: 'var(--text-secondary)' }}>{row.date}</td>
+                  <td className="px-3 py-2 max-w-[200px] truncate" style={{ color: 'var(--text-primary)' }}>{row.description}</td>
+                  <td className="px-3 py-2" style={{ color: 'var(--text-secondary)' }}>{row.merchant ?? '—'}</td>
                   <td className="px-3 py-2">
                     {row.category ? (
                       <Badge color={row.category.color ?? undefined}>
@@ -139,15 +138,13 @@ export function ImportPreview({ importId, rows, onConfirmed, onCancel }: ImportP
                       </Badge>
                     ) : '—'}
                   </td>
-                  <td className={`px-3 py-2 text-right font-mono whitespace-nowrap ${
-                    row.type === 'debit' ? 'text-red-400' : 'text-[#c8f65d]'
-                  }`}>
+                  <td className="px-3 py-2 text-right font-mono whitespace-nowrap" style={{ color: row.type === 'debit' ? '#f87171' : 'var(--accent)' }}>
                     {row.type === 'debit' ? '−' : '+'}{row.amount.toFixed(2)}
                   </td>
                   <td className="px-3 py-2 text-center">
                     {row.is_duplicate
-                      ? <Badge className="text-[10px] text-yellow-400 border-yellow-500/30 bg-yellow-500/10">Duplicate</Badge>
-                      : <Badge className="text-[10px] text-[#c8f65d] border-[#c8f65d]/30 bg-[#c8f65d]/10">New</Badge>
+                      ? <Badge color="#f59e0b" className="text-[10px]">Duplicate</Badge>
+                      : <Badge color="#16a34a" className="text-[10px]">New</Badge>
                     }
                   </td>
                 </tr>
@@ -158,11 +155,7 @@ export function ImportPreview({ importId, rows, onConfirmed, onCancel }: ImportP
       </div>
 
       <div className="flex gap-3">
-        <Button
-          onClick={handleConfirm}
-          disabled={loading || selectedCount === 0}
-          className="flex-1 justify-center"
-        >
+        <Button onClick={handleConfirm} disabled={loading || selectedCount === 0} className="flex-1 justify-center">
           {loading ? 'Importing...' : `Import ${selectedCount} transaction${selectedCount !== 1 ? 's' : ''}`}
         </Button>
         <Button variant="secondary" onClick={onCancel}>Cancel</Button>
