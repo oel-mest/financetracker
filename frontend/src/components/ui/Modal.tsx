@@ -1,11 +1,11 @@
 import { useEffect, ReactNode } from 'react'
 
 interface ModalProps {
-  open:       boolean
-  onClose:    () => void
-  title:      string
-  children:   ReactNode
-  width?:     string
+  open:     boolean
+  onClose:  () => void
+  title:    string
+  children: ReactNode
+  width?:   string
 }
 
 export function Modal({ open, onClose, title, children, width = 'max-w-lg' }: ModalProps) {
@@ -20,17 +20,24 @@ export function Modal({ open, onClose, title, children, width = 'max-w-lg' }: Mo
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
       {/* Backdrop */}
-      <div
-        className="absolute inset-0 bg-black/70 backdrop-blur-sm"
-        onClick={onClose}
-      />
+      <div className="absolute inset-0 bg-black/70 backdrop-blur-sm" onClick={onClose} />
+
       {/* Panel */}
-      <div className={`relative w-full ${width} bg-zinc-900 border border-zinc-800 rounded-2xl shadow-2xl`}>
-        <div className="flex items-center justify-between px-6 py-4 border-b border-zinc-800">
-          <h2 className="text-white font-semibold text-base">{title}</h2>
+      <div
+        className={`relative w-full ${width} rounded-2xl shadow-2xl`}
+        style={{ backgroundColor: 'var(--bg-card)', border: '1px solid var(--border)' }}
+      >
+        <div
+          className="flex items-center justify-between px-6 py-4"
+          style={{ borderBottom: '1px solid var(--border)' }}
+        >
+          <h2 className="font-semibold text-base" style={{ color: 'var(--text-primary)' }}>{title}</h2>
           <button
             onClick={onClose}
-            className="text-zinc-500 hover:text-white transition-colors text-xl leading-none"
+            className="text-xl leading-none transition-colors"
+            style={{ color: 'var(--text-muted)' }}
+            onMouseEnter={(e) => (e.currentTarget.style.color = 'var(--text-primary)')}
+            onMouseLeave={(e) => (e.currentTarget.style.color = 'var(--text-muted)')}
           >
             ×
           </button>

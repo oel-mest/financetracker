@@ -8,7 +8,7 @@ export function PageHeader({ title, subtitle, action }: PageHeaderProps) {
   return (
     <div className="flex items-start justify-between mb-8">
       <div>
-        <h1 className="text-white font-bold text-2xl tracking-tight">{title}</h1>
+        <h1 className="font-bold text-2xl tracking-tight" style={{ color: 'var(--text-primary)' }}>{title}</h1>
         {subtitle && <p className="text-zinc-500 text-sm mt-1">{subtitle}</p>}
       </div>
       {action && <div>{action}</div>}
