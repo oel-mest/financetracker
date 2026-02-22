@@ -1,0 +1,27 @@
+# Environment
+.env
+.env.local
+.env.*.local
+
+# Dependencies
+node_modules/
+**/node_modules/
+
+# Build outputs
+frontend/dist/
+backend/dist/
+**/__pycache__/
+**/*.pyc
+*.egg-info/
+
+# Temp files
+*.log
+.DS_Store
+Thumbs.db
+
+# Parser test artifacts
+parser/*.json
+parser/cih.pdf
+
+# Docker volumes (if any local mounts)
+.docker/

@@ -1,0 +1,65 @@
+services:
+
+  # ── Frontend ────────────────────────────────────────────────────
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+      args:
+        VITE_SUPABASE_URL:      ${VITE_SUPABASE_URL}
+        VITE_SUPABASE_ANON_KEY: ${VITE_SUPABASE_ANON_KEY}
+        VITE_API_URL:           ${VITE_API_URL:-http://localhost:2027}
+    ports:
+      - "2026:2026"
+    depends_on:
+      backend:
+        condition: service_healthy
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "wget", "-qO-", "http://localhost:2026"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+
+  # ── Backend ─────────────────────────────────────────────────────
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    ports:
+      - "2027:2027"
+    environment:
+      SUPABASE_URL:              ${SUPABASE_URL}
+      SUPABASE_SERVICE_ROLE_KEY: ${SUPABASE_SERVICE_ROLE_KEY}
+      SUPABASE_ANON_KEY:         ${SUPABASE_ANON_KEY}
+      PARSER_URL:                http://parser:2028
+      BACKEND_PORT:              2027
+    depends_on:
+      parser:
+        condition: service_healthy
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "wget", "-qO-", "http://localhost:2027/health"]
+      interval: 30s
+      timeout: 5s
+      start_period: 10s
+      retries: 3
+
+  # ── Parser ──────────────────────────────────────────────────────
+  parser:
+    build:
+      context: ./parser
+      dockerfile: Dockerfile
+    ports:
+      - "2028:2028"
+    environment:
+      SUPABASE_URL:              ${SUPABASE_URL}
+      SUPABASE_SERVICE_ROLE_KEY: ${SUPABASE_SERVICE_ROLE_KEY}
+      PARSER_PORT:               2028
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://localhost:2028/health')"]
+      interval: 30s
+      timeout: 10s
+      start_period: 30s
+      retries: 3
