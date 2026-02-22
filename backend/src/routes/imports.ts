@@ -149,7 +149,7 @@ router.post('/pdf', upload.single('file'), async (req: AuthRequest, res: Respons
     .insert({
       user_id:      req.user!.id,
       account_id,
-      source:       'pdf',
+      source:       'pdf_cih',
       status:       'pending',
       storage_path: storagePath,
     })
