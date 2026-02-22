@@ -51,7 +51,9 @@ export function CategoryChart({ data }: Props) {
               ))}
             </Pie>
             <Tooltip
-              contentStyle={{ backgroundColor: '#18181b', border: '1px solid #3f3f46', borderRadius: 8 }}
+              contentStyle={{ backgroundColor: '#18181b', border: '1px solid #3f3f46', borderRadius: 8, color: '#fff' }}
+              labelStyle={{ color: '#a1a1aa' }}
+              itemStyle={{ color: '#fff' }}
               formatter={(v: number) => [`${v.toLocaleString('fr-MA')} MAD`]}
             />
           </PieChart>
