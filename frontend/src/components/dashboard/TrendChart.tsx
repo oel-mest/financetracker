@@ -21,7 +21,7 @@ export function TrendChart({ data }: Props) {
 
   return (
     <Card className="p-5">
-      <p className="text-zinc-400 text-xs font-mono uppercase tracking-wider mb-5">
+      <p className="text-xs font-mono uppercase tracking-wider mb-5" style={{ color: 'var(--text-muted)' }}>
         6-month trend
       </p>
       <ResponsiveContainer width="100%" height={200}>
@@ -36,12 +36,17 @@ export function TrendChart({ data }: Props) {
               <stop offset="95%" stopColor="#c8f65d" stopOpacity={0} />
             </linearGradient>
           </defs>
-          <CartesianGrid strokeDasharray="3 3" stroke="#27272a" />
-          <XAxis dataKey="month" tick={{ fill: '#71717a', fontSize: 11 }} axisLine={false} tickLine={false} />
-          <YAxis tick={{ fill: '#71717a', fontSize: 11 }} axisLine={false} tickLine={false} />
+          <CartesianGrid strokeDasharray="3 3" stroke="var(--border)" />
+          <XAxis dataKey="month" tick={{ fill: 'var(--text-muted)', fontSize: 11 }} axisLine={false} tickLine={false} />
+          <YAxis tick={{ fill: 'var(--text-muted)', fontSize: 11 }} axisLine={false} tickLine={false} />
           <Tooltip
-            contentStyle={{ backgroundColor: '#18181b', border: '1px solid #3f3f46', borderRadius: 8 }}
-            labelStyle={{ color: '#a1a1aa' }}
+            contentStyle={{
+              backgroundColor: 'var(--bg-secondary)',
+              border: '1px solid var(--border)',
+              borderRadius: 8,
+            }}
+            labelStyle={{ color: 'var(--text-secondary)' }}
+            itemStyle={{ color: 'var(--text-primary)' }}
             formatter={(v: number) => [`${v.toLocaleString('fr-MA')} MAD`]}
           />
           <Area type="monotone" dataKey="Spent"  stroke="#f87171" strokeWidth={2} fill="url(#gradSpent)"  dot={false} />
@@ -49,11 +54,11 @@ export function TrendChart({ data }: Props) {
         </AreaChart>
       </ResponsiveContainer>
       <div className="flex gap-4 mt-3">
-        <span className="flex items-center gap-1.5 text-xs text-zinc-400">
+        <span className="flex items-center gap-1.5 text-xs" style={{ color: 'var(--text-secondary)' }}>
           <span className="w-3 h-0.5 bg-red-400 inline-block rounded" /> Spent
         </span>
-        <span className="flex items-center gap-1.5 text-xs text-zinc-400">
-          <span className="w-3 h-0.5 bg-[#c8f65d] inline-block rounded" /> Income
+        <span className="flex items-center gap-1.5 text-xs" style={{ color: 'var(--text-secondary)' }}>
+          <span className="w-3 h-0.5 inline-block rounded" style={{ backgroundColor: 'var(--accent)' }} /> Income
         </span>
       </div>
     </Card>
