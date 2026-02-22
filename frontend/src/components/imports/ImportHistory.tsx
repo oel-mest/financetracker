@@ -12,11 +12,11 @@ interface ImportSession {
   storage_path:      string | null
 }
 
-const STATUS_STYLE: Record<string, string> = {
-  confirmed: 'text-[#c8f65d] border-[#c8f65d]/30 bg-[#c8f65d]/10',
-  parsed:    'text-blue-400 border-blue-400/30 bg-blue-400/10',
-  failed:    'text-red-400 border-red-400/30 bg-red-400/10',
-  pending:   'text-zinc-400 border-zinc-600 bg-zinc-800',
+const STATUS_COLOR: Record<string, string> = {
+  confirmed: '#c8f65d',
+  parsed:    '#60a5fa',
+  failed:    '#f87171',
+  pending:   '#94a3b8',
 }
 
 export function ImportHistory() {
@@ -32,13 +32,13 @@ export function ImportHistory() {
   if (loading) {
     return (
       <div className="flex items-center justify-center h-24">
-        <div className="w-5 h-5 border-2 border-[#c8f65d] border-t-transparent rounded-full animate-spin" />
+        <div className="w-5 h-5 border-2 border-t-transparent rounded-full animate-spin" style={{ borderColor: 'var(--accent)', borderTopColor: 'transparent' }} />
       </div>
     )
   }
 
   if (sessions.length === 0) {
-    return <p className="text-zinc-600 text-sm text-center py-6">No imports yet.</p>
+    return <p className="text-sm text-center py-6" style={{ color: 'var(--text-muted)' }}>No imports yet.</p>
   }
 
   return (
@@ -46,14 +46,15 @@ export function ImportHistory() {
       {sessions.map((s) => (
         <div
           key={s.id}
-          className="flex items-center gap-4 px-4 py-3 bg-zinc-800/30 border border-zinc-800 rounded-lg"
+          className="flex items-center gap-4 px-4 py-3 rounded-lg"
+          style={{ backgroundColor: 'var(--bg-hover)', border: '1px solid var(--border)' }}
         >
           <span className="text-lg">{s.source === 'pdf' ? '🏦' : '📄'}</span>
           <div className="flex-1 min-w-0">
-            <p className="text-white text-xs font-medium">
+            <p className="text-xs font-medium" style={{ color: 'var(--text-primary)' }}>
               {s.source.toUpperCase()} Import
             </p>
-            <p className="text-zinc-500 text-xs">
+            <p className="text-xs" style={{ color: 'var(--text-muted)' }}>
               {new Date(s.created_at).toLocaleDateString('fr-MA', {
                 day: '2-digit', month: 'short', year: 'numeric',
                 hour: '2-digit', minute: '2-digit',
@@ -61,11 +62,11 @@ export function ImportHistory() {
             </p>
           </div>
           {s.transaction_count != null && (
-            <span className="text-zinc-400 text-xs">
+            <span className="text-xs" style={{ color: 'var(--text-secondary)' }}>
               {s.transaction_count} tx · {s.duplicate_count ?? 0} dupes
             </span>
           )}
-          <Badge className={`text-[10px] ${STATUS_STYLE[s.status]}`}>
+          <Badge color={STATUS_COLOR[s.status]} className="text-[10px]">
             {s.status}
           </Badge>
         </div>
