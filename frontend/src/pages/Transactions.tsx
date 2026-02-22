@@ -25,6 +25,9 @@ export default function Transactions() {
   const [showCreate,   setShowCreate]   = useState(false)
   const [editing,      setEditing]      = useState<Transaction | null>(null)
   const [deleting,     setDeleting]     = useState<Transaction | null>(null)
+  const [selected,     setSelected]     = useState<Set<string>>(new Set())
+  const [bulkDeleting, setBulkDeleting] = useState(false)
+  const [bulkLoading,  setBulkLoading]  = useState(false)
 
   // Filters
   const [search,      setSearch]      = useState('')
@@ -49,6 +52,7 @@ export default function Transactions() {
       const { data } = await api.get('/transactions', { params })
       setTransactions(data.data)
       setPagination(data.pagination)
+      setSelected(new Set())
     } finally {
       setLoading(false)
     }
@@ -74,6 +78,37 @@ export default function Transactions() {
     fetchTransactions()
   }
 
+  const handleBulkDelete = async () => {
+    setBulkLoading(true)
+    try {
+      await Promise.all([...selected].map((id) => api.delete(`/transactions/${id}`)))
+      setBulkDeleting(false)
+      setSelected(new Set())
+      fetchTransactions()
+    } finally {
+      setBulkLoading(false)
+    }
+  }
+
+  const toggleSelect = (id: string) => {
+    setSelected((prev) => {
+      const next = new Set(prev)
+      next.has(id) ? next.delete(id) : next.add(id)
+      return next
+    })
+  }
+
+  const toggleSelectAll = () => {
+    if (selected.size === transactions.length) {
+      setSelected(new Set())
+    } else {
+      setSelected(new Set(transactions.map((t) => t.id)))
+    }
+  }
+
+  const allSelected = transactions.length > 0 && selected.size === transactions.length
+  const someSelected = selected.size > 0
+
   const accountOptions = [
     { value: '', label: 'All accounts' },
     ...accounts.map((a) => ({ value: a.id, label: a.name })),
@@ -89,7 +124,16 @@ export default function Transactions() {
       <PageHeader
         title="Transactions"
         subtitle={pagination ? `${pagination.total} transactions` : ''}
-        action={<Button onClick={() => setShowCreate(true)}>+ Add</Button>}
+        action={
+          <div className="flex gap-2">
+            {someSelected && (
+              <Button variant="danger" onClick={() => setBulkDeleting(true)}>
+                Delete {selected.size} selected
+              </Button>
+            )}
+            <Button onClick={() => setShowCreate(true)}>+ Add</Button>
+          </div>
+        }
       />
 
       {/* Filters */}
@@ -147,13 +191,35 @@ export default function Transactions() {
           </div>
         ) : (
           <div className="p-2">
-            {transactions.map((t) => (
-              <TransactionRow
-                key={t.id}
-                transaction={t}
-                onEdit={() => setEditing(t)}
-                onDelete={() => setDeleting(t)}
+            {/* Select all row */}
+            <div className="flex items-center gap-3 px-3 py-2 mb-1 border-b border-zinc-800">
+              <input
+                type="checkbox"
+                checked={allSelected}
+                onChange={toggleSelectAll}
+                className="w-4 h-4 rounded accent-[#c8f65d] cursor-pointer"
               />
+              <span className="text-zinc-500 text-xs">
+                {someSelected ? `${selected.size} selected` : `Select all (${transactions.length})`}
+              </span>
+            </div>
+
+            {transactions.map((t) => (
+              <div key={t.id} className="flex items-center gap-2">
+                <input
+                  type="checkbox"
+                  checked={selected.has(t.id)}
+                  onChange={() => toggleSelect(t.id)}
+                  className="w-4 h-4 rounded accent-[#c8f65d] cursor-pointer flex-shrink-0 ml-1"
+                />
+                <div className="flex-1 min-w-0">
+                  <TransactionRow
+                    transaction={t}
+                    onEdit={() => setEditing(t)}
+                    onDelete={() => setDeleting(t)}
+                  />
+                </div>
+              </div>
             ))}
           </div>
         )}
@@ -225,6 +291,24 @@ export default function Transactions() {
             </div>
           </div>
         )}
+      </Modal>
+
+      {/* Bulk delete confirm */}
+      <Modal open={bulkDeleting} onClose={() => setBulkDeleting(false)} title="Delete selected">
+        <p className="text-zinc-300 text-sm mb-6">
+          Delete <strong className="text-white">{selected.size} transactions</strong>? This cannot be undone.
+        </p>
+        <div className="flex gap-3">
+          <Button
+            variant="danger"
+            className="flex-1 justify-center"
+            onClick={handleBulkDelete}
+            disabled={bulkLoading}
+          >
+            {bulkLoading ? 'Deleting...' : `Delete ${selected.size}`}
+          </Button>
+          <Button variant="secondary" onClick={() => setBulkDeleting(false)}>Cancel</Button>
+        </div>
       </Modal>
     </div>
   )

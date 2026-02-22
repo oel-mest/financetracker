@@ -30,8 +30,8 @@ export async function normalizeImport(
 ): Promise<NormalizedTransaction[]> {
   const results: NormalizedTransaction[] = []
 
-  for (const row of rawRows) {
-    const hash = buildTransactionHash(userId, row.date, row.amount, row.description)
+  for (const [index, row] of rawRows.entries()) {
+    const hash = buildTransactionHash(userId, row.date, row.amount, row.description, index)
 
     // Check duplicate
     const { data: existing } = await supabase
