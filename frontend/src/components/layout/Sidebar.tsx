@@ -21,6 +21,8 @@ export function Sidebar() {
     navigate('/login')
   }
 
+  const isDark = theme === 'dark'
+
   return (
     <aside
       className="fixed left-0 top-0 h-screen w-56 flex flex-col z-40"
@@ -74,9 +76,11 @@ export function Sidebar() {
         ))}
       </nav>
 
-      {/* User + controls */}
-      <div className="px-4 py-4" style={{ borderTop: '1px solid var(--sidebar-border)' }}>
-        <div className="flex items-center gap-3 px-2 py-2 rounded-lg">
+      {/* Bottom section */}
+      <div className="px-4 py-4 space-y-3" style={{ borderTop: '1px solid var(--sidebar-border)' }}>
+
+        {/* User info */}
+        <div className="flex items-center gap-3 px-2 py-1.5 rounded-lg">
           <div
             className="w-7 h-7 rounded-full flex items-center justify-center flex-shrink-0"
             style={{ backgroundColor: 'var(--accent-muted)', border: '1px solid var(--accent-border)' }}
@@ -90,27 +94,59 @@ export function Sidebar() {
           </span>
         </div>
 
-        {/* Theme toggle */}
+        {/* Theme toggle pill */}
         <button
           onClick={toggleTheme}
-          className="w-full mt-2 text-xs py-1.5 px-3 rounded-lg transition-colors text-left flex items-center gap-2"
-          style={{ color: 'var(--sidebar-muted)' }}
-          onMouseEnter={(e) => { e.currentTarget.style.backgroundColor = 'rgba(255,255,255,0.06)'; e.currentTarget.style.color = '#fff' }}
-          onMouseLeave={(e) => { e.currentTarget.style.backgroundColor = 'transparent'; e.currentTarget.style.color = 'var(--sidebar-muted)' }}
+          className="w-full flex items-center justify-between px-3 py-2 rounded-lg transition-colors"
+          style={{
+            backgroundColor: 'rgba(255,255,255,0.05)',
+            border: '1px solid var(--sidebar-border)',
+          }}
+          onMouseEnter={(e) => (e.currentTarget.style.backgroundColor = 'rgba(255,255,255,0.08)')}
+          onMouseLeave={(e) => (e.currentTarget.style.backgroundColor = 'rgba(255,255,255,0.05)')}
         >
-          <span>{theme === 'dark' ? '☀' : '●'}</span>
-          {theme === 'dark' ? 'Light mode' : 'Dark mode'}
+          <div className="flex items-center gap-2">
+            <span className="text-sm">{isDark ? '🌙' : '☀️'}</span>
+            <span className="text-xs font-medium" style={{ color: 'var(--sidebar-text)' }}>
+              {isDark ? 'Dark mode' : 'Light mode'}
+            </span>
+          </div>
+          {/* Pill indicator */}
+          <div
+            className="w-9 h-5 rounded-full relative transition-colors flex-shrink-0"
+            style={{ backgroundColor: isDark ? 'rgba(255,255,255,0.1)' : 'var(--accent)' }}
+          >
+            <div
+              className="absolute top-0.5 w-4 h-4 rounded-full transition-all"
+              style={{
+                backgroundColor: isDark ? 'var(--sidebar-text)' : '#fff',
+                left: isDark ? '2px' : '18px',
+              }}
+            />
+          </div>
         </button>
 
+        {/* Sign out — full width red button */}
         <button
           onClick={handleLogout}
-          className="w-full mt-1 text-xs py-1.5 px-3 rounded-lg transition-colors text-left"
-          style={{ color: 'var(--sidebar-muted)' }}
-          onMouseEnter={(e) => { e.currentTarget.style.color = '#fca5a5'; e.currentTarget.style.backgroundColor = 'rgba(239,68,68,0.1)' }}
-          onMouseLeave={(e) => { e.currentTarget.style.color = 'var(--sidebar-muted)'; e.currentTarget.style.backgroundColor = 'transparent' }}
+          className="w-full py-2 rounded-lg text-xs font-semibold tracking-wide transition-colors"
+          style={{
+            backgroundColor: 'rgba(239,68,68,0.12)',
+            color: '#f87171',
+            border: '1px solid rgba(239,68,68,0.25)',
+          }}
+          onMouseEnter={(e) => {
+            e.currentTarget.style.backgroundColor = 'rgba(239,68,68,0.22)'
+            e.currentTarget.style.color = '#fca5a5'
+          }}
+          onMouseLeave={(e) => {
+            e.currentTarget.style.backgroundColor = 'rgba(239,68,68,0.12)'
+            e.currentTarget.style.color = '#f87171'
+          }}
         >
           Sign out
         </button>
+
       </div>
     </aside>
   )
