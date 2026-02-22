@@ -12,18 +12,18 @@ export interface DashboardSummary {
 }
 
 export interface CategoryBreakdown {
-  category_id:       string | null
-  name:              string
-  color:             string | null
-  icon:              string | null
-  total:             number
-  count:             number
+  category_id: string | null
+  name:        string
+  color:       string | null
+  icon:        string | null
+  total:       number
+  count:       number
 }
 
 export interface TopMerchant {
-  merchant:          string
-  total_amount:      number
-  transaction_count: number
+  merchant: string
+  total:    number
+  count:    number
 }
 
 export interface BudgetItem {
