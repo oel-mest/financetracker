@@ -15,7 +15,7 @@ export function useCategories() {
 
   useEffect(() => {
     api.get('/categories')
-      .then(({ data }) => setCategories(data))
+      .then(({ data }: { data: Category[] }) => setCategories(data))
       .finally(() => setLoading(false))
   }, [])
 

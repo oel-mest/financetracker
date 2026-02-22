@@ -1,28 +1,10 @@
-import axios from 'axios'
+import { createClient, SupabaseClient } from '@supabase/supabase-js'
 
-const BASE_URL = import.meta.env.VITE_API_URL ?? 'http://localhost:2027'
+const supabaseUrl:  string = import.meta.env.VITE_SUPABASE_URL
+const supabaseAnon: string = import.meta.env.VITE_SUPABASE_ANON_KEY
 
-export const api = axios.create({
-  baseURL: BASE_URL,
-  headers: { 'Content-Type': 'application/json' },
-})
+if (!supabaseUrl || !supabaseAnon) {
+  throw new Error('Missing VITE_SUPABASE_URL or VITE_SUPABASE_ANON_KEY')
+}
 
-// Inject auth token from localStorage on every request
-api.interceptors.request.use((config) => {
-  const token = localStorage.getItem('access_token')
-  if (token) config.headers.Authorization = `Bearer ${token}`
-  return config
-})
-
-// On 401 — clear session and redirect to login
-api.interceptors.response.use(
-  (res) => res,
-  (err) => {
-    if (err.response?.status === 401) {
-      localStorage.removeItem('access_token')
-      localStorage.removeItem('refresh_token')
-      window.location.href = '/login'
-    }
-    return Promise.reject(err)
-  }
-)
+export const supabase: SupabaseClient = createClient(supabaseUrl, supabaseAnon)

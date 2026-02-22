@@ -3,7 +3,6 @@ import { api }           from '../../lib/api'
 import { supabase }      from '../../lib/supabase'
 import { Button }        from '../ui/Button'
 import { Select }        from '../ui/Select'
-import { Input }         from '../ui/Input'
 import { useAccounts }   from '../../hooks/useAccounts'
 import { ImportPreview } from './ImportPreview'
 import { useAuth }       from '../../context/AuthContext'
@@ -30,8 +29,8 @@ export function PdfImport() {
     ...accounts.map((a) => ({ value: a.id, label: a.name })),
   ]
 
-  const currentYear  = new Date().getFullYear()
-  const yearOptions  = Array.from({ length: 5 }, (_, i) => {
+  const currentYear = new Date().getFullYear()
+  const yearOptions = Array.from({ length: 5 }, (_, i) => {
     const y = String(currentYear - i)
     return { value: y, label: y }
   })
@@ -131,7 +130,6 @@ export function PdfImport() {
         options={yearOptions}
       />
 
-      {/* Drop zone */}
       <div>
         <label className="block text-zinc-400 text-xs font-mono uppercase tracking-wider mb-2">
           CIH Bank PDF statement
@@ -147,7 +145,6 @@ export function PdfImport() {
         </div>
       </div>
 
-      {/* Upload progress */}
       {loading && uploadPct > 0 && (
         <div>
           <div className="flex justify-between text-xs text-zinc-400 mb-1">

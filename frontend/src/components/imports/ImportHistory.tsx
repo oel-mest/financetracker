@@ -1,6 +1,5 @@
 import { useState, useEffect } from 'react'
 import { api }   from '../../lib/api'
-import { Card }  from '../ui/Card'
 import { Badge } from '../ui/Badge'
 
 interface ImportSession {
@@ -26,7 +25,7 @@ export function ImportHistory() {
 
   useEffect(() => {
     api.get('/imports')
-      .then(({ data }) => setSessions(data))
+      .then(({ data }: { data: ImportSession[] }) => setSessions(data))
       .finally(() => setLoading(false))
   }, [])
 

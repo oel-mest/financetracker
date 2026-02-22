@@ -31,16 +31,20 @@ const FilterSchema = z.object({
   date_to:      z.string().optional(),
   amount_min:   z.coerce.number().optional(),
   amount_max:   z.coerce.number().optional(),
-  tags:         z.string().optional(),  // comma-separated
-  search:       z.string().optional(),  // full-text on description/merchant
+  tags:         z.string().optional(),
+  search:       z.string().optional(),
   page:         z.coerce.number().default(1),
-  limit:        z.coerce.number().default(30).max(100),
+  limit:        z.coerce.number().default(30),
 })
+
+type Filters = z.infer<typeof FilterSchema>
 
 // GET /transactions
 router.get('/', async (req: AuthRequest, res: Response) => {
-  const filters = FilterSchema.parse(req.query)
-  const offset = (filters.page - 1) * filters.limit
+  const filters: Filters = FilterSchema.parse(req.query)
+  const page:  number = filters.page  as number
+  const limit: number = filters.limit as number
+  const offset = (page - 1) * limit
 
   let query = supabase
     .from('transactions')
@@ -48,7 +52,7 @@ router.get('/', async (req: AuthRequest, res: Response) => {
     .eq('user_id', req.user!.id)
     .order('date', { ascending: false })
     .order('created_at', { ascending: false })
-    .range(offset, offset + filters.limit - 1)
+    .range(offset, offset + limit - 1)
 
   if (filters.account_id)  query = query.eq('account_id', filters.account_id)
   if (filters.category_id) query = query.eq('category_id', filters.category_id)
@@ -64,7 +68,7 @@ router.get('/', async (req: AuthRequest, res: Response) => {
     )
   }
   if (filters.tags) {
-    const tagList = filters.tags.split(',').map((t) => t.trim())
+    const tagList: string[] = (filters.tags as string).split(',').map((t: string) => t.trim())
     query = query.overlaps('tags', tagList)
   }
 
@@ -76,9 +80,9 @@ router.get('/', async (req: AuthRequest, res: Response) => {
     data,
     pagination: {
       total: count ?? 0,
-      page: filters.page,
-      limit: filters.limit,
-      pages: Math.ceil((count ?? 0) / filters.limit),
+      page,
+      limit,
+      pages: Math.ceil((count ?? 0) / limit),
     },
   })
 })
@@ -101,7 +105,6 @@ router.post('/', async (req: AuthRequest, res: Response) => {
   const body = TransactionSchema.parse(req.body)
   const userId = req.user!.id
 
-  // Verify account belongs to user
   const { data: account } = await supabase
     .from('accounts')
     .select('id')
@@ -111,16 +114,13 @@ router.post('/', async (req: AuthRequest, res: Response) => {
 
   if (!account) { res.status(400).json({ error: 'Account not found' }); return }
 
-  // Auto-categorize if no category provided
   let categoryId = body.category_id
   if (!categoryId) {
     categoryId = await autoCategorize(userId, `${body.description} ${body.merchant ?? ''}`)
   }
 
-  // Build hash for duplicate detection
   const hash = buildTransactionHash(userId, body.date, body.amount, body.description)
 
-  // Check for duplicate
   const { data: duplicate } = await supabase
     .from('transactions')
     .select('id')
@@ -157,7 +157,6 @@ router.patch('/:id', async (req: AuthRequest, res: Response) => {
 
   if (!existing) { res.status(404).json({ error: 'Transaction not found' }); return }
 
-  // Recompute hash if key fields changed
   const newDate        = body.date        ?? existing.date
   const newAmount      = body.amount      ?? existing.amount
   const newDescription = body.description ?? existing.description
