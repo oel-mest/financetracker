@@ -25,7 +25,7 @@ export default function Accounts() {
   if (loading) {
     return (
       <div className="flex items-center justify-center h-64">
-        <div className="w-6 h-6 border-2 border-[#c8f65d] border-t-transparent rounded-full animate-spin" />
+        <div className="w-6 h-6 border-2 border-t-transparent rounded-full animate-spin" style={{ borderColor: 'var(--accent)', borderTopColor: 'transparent' }} />
       </div>
     )
   }
@@ -35,53 +35,54 @@ export default function Accounts() {
       <PageHeader
         title="Accounts"
         subtitle={`Total balance: ${totalBalance.toLocaleString('fr-MA', { minimumFractionDigits: 2 })} MAD`}
-        action={
-          <Button onClick={() => setShowCreate(true)}>+ New account</Button>
-        }
+        action={<Button onClick={() => setShowCreate(true)}>+ New account</Button>}
       />
 
       {accounts.length === 0 ? (
         <Card className="p-12 text-center">
           <p className="text-4xl mb-3">◈</p>
-          <p className="text-white font-medium mb-1">No accounts yet</p>
-          <p className="text-zinc-500 text-sm mb-4">Add your first account to start tracking</p>
+          <p className="font-medium mb-1" style={{ color: 'var(--text-primary)' }}>No accounts yet</p>
+          <p className="text-sm mb-4" style={{ color: 'var(--text-muted)' }}>Add your first account to start tracking</p>
           <Button onClick={() => setShowCreate(true)}>+ New account</Button>
         </Card>
       ) : (
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
           {accounts.map((account) => (
-            <Card key={account.id} className="p-5 hover:border-zinc-700 transition-colors">
+            <Card key={account.id} className="p-5 transition-colors">
               {/* Color stripe */}
-              <div
-                className="w-8 h-1 rounded-full mb-4"
-                style={{ backgroundColor: account.color ?? '#c8f65d' }}
-              />
+              <div className="w-8 h-1 rounded-full mb-4" style={{ backgroundColor: account.color ?? 'var(--accent)' }} />
 
               <div className="flex items-start justify-between mb-4">
                 <div>
-                  <p className="text-white font-semibold text-base">{account.name}</p>
-                  <p className="text-zinc-500 text-xs mt-0.5">
+                  <p className="font-semibold text-base" style={{ color: 'var(--text-primary)' }}>{account.name}</p>
+                  <p className="text-xs mt-0.5" style={{ color: 'var(--text-muted)' }}>
                     {TYPE_ICON[account.type]} {TYPE_LABEL[account.type]}
                   </p>
                 </div>
               </div>
 
-              <p className="text-2xl font-bold text-white mb-1">
+              <p className="text-2xl font-bold mb-1" style={{ color: 'var(--text-primary)' }}>
                 {account.balance.toLocaleString('fr-MA', { minimumFractionDigits: 2 })}
-                <span className="text-zinc-500 text-sm font-normal ml-1">MAD</span>
+                <span className="text-sm font-normal ml-1" style={{ color: 'var(--text-muted)' }}>MAD</span>
               </p>
 
-              <div className="flex gap-2 mt-4 pt-4 border-t border-zinc-800">
+              <div className="flex gap-2 mt-4 pt-4" style={{ borderTop: '1px solid var(--border)' }}>
                 <button
                   onClick={() => setEditing(account)}
-                  className="text-zinc-400 hover:text-white text-xs transition-colors"
+                  className="text-xs transition-colors"
+                  style={{ color: 'var(--text-muted)' }}
+                  onMouseEnter={(e) => (e.currentTarget.style.color = 'var(--text-primary)')}
+                  onMouseLeave={(e) => (e.currentTarget.style.color = 'var(--text-muted)')}
                 >
                   Edit
                 </button>
-                <span className="text-zinc-700">·</span>
+                <span style={{ color: 'var(--border)' }}>·</span>
                 <button
                   onClick={() => setDeleting(account)}
-                  className="text-zinc-400 hover:text-red-400 text-xs transition-colors"
+                  className="text-xs transition-colors"
+                  style={{ color: 'var(--text-muted)' }}
+                  onMouseEnter={(e) => (e.currentTarget.style.color = '#f87171')}
+                  onMouseLeave={(e) => (e.currentTarget.style.color = 'var(--text-muted)')}
                 >
                   Delete
                 </button>
@@ -91,7 +92,6 @@ export default function Accounts() {
         </div>
       )}
 
-      {/* Create modal */}
       <Modal open={showCreate} onClose={() => setShowCreate(false)} title="New account">
         <AccountForm
           onSubmit={async (data) => { await create(data); setShowCreate(false) }}
@@ -99,7 +99,6 @@ export default function Accounts() {
         />
       </Modal>
 
-      {/* Edit modal */}
       <Modal open={!!editing} onClose={() => setEditing(null)} title="Edit account">
         {editing && (
           <AccountForm
@@ -110,12 +109,11 @@ export default function Accounts() {
         )}
       </Modal>
 
-      {/* Delete confirm */}
       <Modal open={!!deleting} onClose={() => setDeleting(null)} title="Delete account">
         {deleting && (
           <div>
-            <p className="text-zinc-300 text-sm mb-6">
-              Are you sure you want to delete <strong className="text-white">{deleting.name}</strong>?
+            <p className="text-sm mb-6" style={{ color: 'var(--text-secondary)' }}>
+              Are you sure you want to delete <strong style={{ color: 'var(--text-primary)' }}>{deleting.name}</strong>?
               This will also delete all its transactions.
             </p>
             <div className="flex gap-3">
