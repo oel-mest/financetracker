@@ -14,14 +14,14 @@
 
 DRHM is an open-source personal finance tracker designed specifically for Morocco. Most finance apps don't support Moroccan banks, currencies, or spending patterns. DRHM does.
 
-Import your CIH Bank PDF statements, track spending by category, set budgets, and get insights — all from a clean, self-hosted dashboard that you fully control.
+Import your CIH or Attijariwafa Bank PDF statements, track spending by category, set budgets, and get insights — all from a clean, self-hosted dashboard that you fully control.
 
 ---
 
 ## Features
 
 ### 📥 Bank Statement Import
-- **PDF Import** — Upload your CIH Bank monthly statement and all transactions are automatically extracted, categorized, and deduplicated
+- **PDF Import** — Upload your CIH or Attijariwafa Bank monthly statement and all transactions are automatically extracted, categorized, and deduplicated
 - **CSV Import** — Import transactions from any spreadsheet with automatic column mapping
 - **Smart deduplication** — Re-importing the same statement won't create duplicate transactions
 - **Import history** — Full log of every import with transaction counts and status
@@ -35,6 +35,9 @@ Import your CIH Bank PDF statements, track spending by category, set budgets, an
 
 ### 📊 Dashboard & Insights
 - Monthly summary: total spent, total income, net balance
+- **Period analysis** — Select a date range (up to 12 months) with presets (Last 3/6/12 months, YTD)
+- Period stats: average monthly/daily spend, savings rate, highest/lowest spending months
+- Month-by-month breakdown table
 - 6-month spending trend chart
 - Category breakdown with visual pie chart
 - Top merchants by spending
@@ -52,8 +55,8 @@ Import your CIH Bank PDF statements, track spending by category, set budgets, an
 - Over-budget alerts on the dashboard
 
 ### 🏦 Multi-Account Support
-- Create multiple accounts (bank, cash, savings)
-- Track balances per account
+- Create multiple accounts (CIH, Attijariwafa, cash, card, other)
+- **Computed balances** — Account balance = initial balance + credits - debits (always accurate)
 - Filter transactions by account
 
 ### 🌓 Dark & Light Mode
@@ -137,9 +140,9 @@ Visit `http://localhost:2026`, sign up, and start importing your statements.
 | Bank | PDF Import | Status |
 |------|-----------|--------|
 | CIH Bank | ✅ | Supported |
-| Attijariwafa Bank (AWB) | 🔜 | Planned |
+| Attijariwafa Bank (AWB) | ✅ | Supported |
 | BMCE / Bank of Africa | 🔜 | Planned |
-| CMP | 🔜 | Planned |
+| Banque Populaire | 🔜 | Planned |
 | Al Barid Bank | 🔜 | Planned |
 
 ---
@@ -147,7 +150,9 @@ Visit `http://localhost:2026`, sign up, and start importing your statements.
 ## Roadmap
 
 ### 🔜 Coming Soon
-- [ ] **Attijariwafa Bank PDF support** — AWB parser is already in openbk, just needs integration
+- [x] **Attijariwafa Bank PDF support** — AWB parser integrated via openbk
+- [x] **Period-based dashboard** — Multi-month analysis with date range selector
+- [x] **Computed account balances** — Real-time balance from initial + transactions
 - [ ] **Multi-currency support** — EUR, USD alongside MAD
 - [ ] **Recurring transaction detection** — Auto-flag subscriptions and regular payments
 - [ ] **Export to Excel/PDF** — Full statement export with charts
@@ -177,7 +182,7 @@ DRHM is open to contributions. Whether you want to add support for a new bank, i
 
 ### Priority contributions needed
 
-- 🏦 **Bank parsers** — If you have statements from AWB, BMCE, CMP, or Al Barid Bank and want to help add support, open an issue
+- 🏦 **Bank parsers** — If you have statements from BMCE, Banque Populaire, or Al Barid Bank and want to help add support, open an issue
 - 🌍 **Translations** — Arabic and French UI translations
 - 📱 **Mobile UI** — Responsive design improvements
 - 🧪 **Tests** — Unit and integration test coverage
