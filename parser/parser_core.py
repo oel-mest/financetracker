@@ -1,11 +1,16 @@
 import pandas as pd
-from openbk.utils.extractors import cih
+from openbk.utils.extractors import cih, awb
 from typing import Any
 
+BANK_EXTRACTORS = {
+    "cih": cih,
+    "awb": awb,
+}
 
-def parse_pdf_file(file_path: str, year: int) -> dict[str, Any]:
+
+def parse_pdf_file(file_path: str, year: int, bank: str = "cih") -> dict[str, Any]:
     """
-    Runs openbk on a CIH PDF file and returns normalized transactions.
+    Runs openbk on a bank PDF file and returns normalized transactions.
 
     openbk returns: [beginning_balance, DataFrame]
     DataFrame columns: transaction, debit, credit, date (format: DD/MM)
@@ -13,15 +18,20 @@ def parse_pdf_file(file_path: str, year: int) -> dict[str, Any]:
     Args:
         file_path: path to the PDF file
         year: the year of the statement (e.g. 2025) — provided by the user on upload
+        bank: bank identifier ("cih" or "awb")
 
     Returns:
       {
-        bank: "CIH",
+        bank: "CIH" | "AWB",
         beginning_balance: float | None,
         transactions: [{ date, description, amount, type, merchant }]
       }
     """
-    output = cih(file_path)
+    extractor = BANK_EXTRACTORS.get(bank)
+    if not extractor:
+        raise ValueError(f"Unsupported bank: {bank}")
+
+    output = extractor(file_path)
 
     beginning_balance = None
     raw_df = None
@@ -32,7 +42,7 @@ def parse_pdf_file(file_path: str, year: int) -> dict[str, Any]:
 
     if raw_df is None or not isinstance(raw_df, pd.DataFrame) or raw_df.empty:
         return {
-            "bank":              "CIH",
+            "bank":              bank.upper(),
             "beginning_balance": beginning_balance,
             "transactions":      [],
         }
@@ -70,7 +80,7 @@ def parse_pdf_file(file_path: str, year: int) -> dict[str, Any]:
         })
 
     return {
-        "bank":              "CIH",
+        "bank":              bank.upper(),
         "beginning_balance": beginning_balance,
         "transactions":      transactions,
     }

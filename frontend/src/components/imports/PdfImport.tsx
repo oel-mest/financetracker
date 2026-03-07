@@ -13,6 +13,7 @@ export function PdfImport() {
 
   const [step,      setStep]      = useState<Step>('upload')
   const [accountId, setAccountId] = useState('')
+  const [bank,      setBank]      = useState('cih')
   const [year,      setYear]      = useState(String(new Date().getFullYear()))
   const [loading,   setLoading]   = useState(false)
   const [error,     setError]     = useState('')
@@ -44,6 +45,7 @@ export function PdfImport() {
       form.append('file',       file)
       form.append('account_id', accountId)
       form.append('year',       year)
+      form.append('bank',       bank)
 
       const { data } = await api.post('/imports/pdf', form, {
         headers: { 'Content-Type': 'multipart/form-data' },
@@ -99,6 +101,16 @@ export function PdfImport() {
       )}
 
       <Select
+        label="Bank"
+        value={bank}
+        onChange={(e) => setBank(e.target.value)}
+        options={[
+          { value: 'cih', label: 'CIH Bank' },
+          { value: 'awb', label: 'Attijariwafa Bank' },
+        ]}
+      />
+
+      <Select
         label="Target account"
         value={accountId}
         onChange={(e) => setAccountId(e.target.value)}
@@ -113,8 +125,8 @@ export function PdfImport() {
       />
 
       <div>
-        <label className="block text-zinc-400 text-xs font-mono uppercase tracking-wider mb-2">
-          CIH Bank PDF statement
+        <label className="block text-xs font-mono uppercase tracking-wider mb-2" style={{ color: 'var(--text-muted)' }}>
+          {bank === 'awb' ? 'Attijariwafa Bank' : 'CIH Bank'} PDF statement
         </label>
         <div
           onClick={() => fileRef.current?.click()}
@@ -122,7 +134,7 @@ export function PdfImport() {
         >
           <p className="text-3xl mb-2 group-hover:scale-110 transition-transform">🏦</p>
           <p className="text-white text-sm font-medium">Click to select a PDF</p>
-          <p className="text-zinc-500 text-xs mt-1">CIH Bank e-banking statement (.pdf)</p>
+          <p className="text-xs mt-1" style={{ color: 'var(--text-muted)' }}>{bank === 'awb' ? 'Attijariwafa' : 'CIH'} e-banking statement (.pdf)</p>
           <input ref={fileRef} type="file" accept=".pdf" className="hidden" />
         </div>
       </div>

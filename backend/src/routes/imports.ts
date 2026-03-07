@@ -115,9 +115,10 @@ router.post('/csv', upload.single('file'), async (req: AuthRequest, res: Respons
 router.post('/pdf', upload.single('file'), async (req: AuthRequest, res: Response) => {
   if (!req.file) { res.status(400).json({ error: 'No file uploaded' }); return }
 
-  const { account_id, year } = z.object({
+  const { account_id, year, bank } = z.object({
     account_id: z.string().uuid(),
     year:       z.coerce.number().int().min(2000).max(2100),
+    bank:       z.enum(['cih', 'awb']).default('cih'),
   }).parse(req.body)
 
   const { data: account } = await supabase
@@ -149,7 +150,7 @@ router.post('/pdf', upload.single('file'), async (req: AuthRequest, res: Respons
     .insert({
       user_id:      req.user!.id,
       account_id,
-      source:       'pdf_cih',
+      source:       bank === 'awb' ? 'pdf_awb' : 'pdf_cih',
       status:       'pending',
       storage_path: storagePath,
     })
@@ -161,7 +162,7 @@ router.post('/pdf', upload.single('file'), async (req: AuthRequest, res: Respons
   // Call Python parser
   let parseResult
   try {
-    parseResult = await parsePdf(storagePath, year)
+    parseResult = await parsePdf(storagePath, year, bank)
   } catch (e: any) {
     await supabase
       .from('imports')

@@ -16,10 +16,10 @@ export interface PdfParseResult {
   bank:              string | null
 }
 
-export async function parsePdf(storagePath: string, year: number): Promise<PdfParseResult> {
+export async function parsePdf(storagePath: string, year: number, bank: string = 'cih'): Promise<PdfParseResult> {
   const response = await axios.post(
     `${PARSER_URL}/parse`,
-    { storage_path: storagePath, year },
+    { storage_path: storagePath, year, bank },
     { timeout: 60000 }
   )
   return response.data as PdfParseResult

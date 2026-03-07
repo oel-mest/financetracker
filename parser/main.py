@@ -28,6 +28,7 @@ supabase_client = create_client(SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY)
 class ParseRequest(BaseModel):
     storage_path: str   # e.g. "imports/{user_id}/statement.pdf"
     year: int           # e.g. 2025 — user specifies on upload
+    bank: str = "cih"   # "cih" or "awb"
 
 
 @app.get("/health")
@@ -56,7 +57,7 @@ def parse(req: ParseRequest):
 
     # 3. Parse with openbk
     try:
-        result = parse_pdf_file(tmp_path, req.year)
+        result = parse_pdf_file(tmp_path, req.year, req.bank)
     except Exception as e:
         logger.error(f"Parse failed: {e}")
         raise HTTPException(status_code=422, detail=f"Failed to parse PDF: {str(e)}")
