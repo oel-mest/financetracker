@@ -13,6 +13,8 @@ const TYPE_OPTIONS = [
   { value: 'cash', label: '💵  Cash' },
   { value: 'card', label: '💳  Card' },
   { value: 'cih',  label: '🏦  CIH Bank' },
+  { value: 'awb',  label: '🏦  Attijariwafa Bank' },
+  { value: 'other', label: '🏛️  Other' },
 ]
 
 interface AccountFormProps {
@@ -23,7 +25,7 @@ interface AccountFormProps {
 
 export function AccountForm({ initial, onSubmit, onCancel }: AccountFormProps) {
   const [name,    setName]    = useState(initial?.name    ?? '')
-  const [type,    setType]    = useState<'cash' | 'card' | 'cih'>(initial?.type ?? 'cash')
+  const [type,    setType]    = useState(initial?.type ?? 'cash')
   const [balance, setBalance] = useState(String(initial?.balance ?? '0'))
   const [color,   setColor]   = useState(initial?.color   ?? ACCOUNT_COLORS[0])
   const [loading, setLoading] = useState(false)
@@ -61,7 +63,7 @@ export function AccountForm({ initial, onSubmit, onCancel }: AccountFormProps) {
       <Select
         label="Type"
         value={type}
-        onChange={(e) => setType(e.target.value as 'cash' | 'card' | 'cih')}
+        onChange={(e) => setType(e.target.value)}
         options={TYPE_OPTIONS}
       />
 

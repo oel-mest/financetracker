@@ -7,7 +7,7 @@ const router = Router()
 
 const AccountSchema = z.object({
   name:     z.string().min(1).max(100),
-  type:     z.enum(['cash', 'card', 'cih']),
+  type:     z.enum(['cash', 'card', 'cih', 'awb', 'other']),
   currency: z.string().default('MAD'),
   balance:  z.number().default(0),
   color:    z.string().optional(),
