@@ -232,8 +232,9 @@ router.get('/oldest', async (req: AuthRequest, res: Response) => {
     return
   }
 
-  const d = new Date(data[0].date)
-  res.json({ oldest_month: `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-01` })
+  // Parse date string directly to avoid timezone shifts
+  const [year, month] = data[0].date.split('-')
+  res.json({ oldest_month: `${year}-${month}-01` })
 })
 
 // GET /dashboard/period?from=2025-01-01&to=2025-06-01
@@ -264,8 +265,8 @@ router.get('/period', async (req: AuthRequest, res: Response) => {
   // Per-month breakdown
   const monthlyMap: Record<string, { debit: number; credit: number }> = {}
   for (const t of rows) {
-    const d = new Date(t.date)
-    const key = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-01`
+    const [y, m] = t.date.split('-')
+    const key = `${y}-${m}-01`
     if (!monthlyMap[key]) monthlyMap[key] = { debit: 0, credit: 0 }
     monthlyMap[key][t.type as 'debit' | 'credit'] += Number(t.amount)
   }
