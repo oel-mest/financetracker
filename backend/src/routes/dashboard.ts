@@ -90,6 +90,25 @@ router.get('/', async (req: AuthRequest, res: Response) => {
       .eq('user_id', userId),
   ])
 
+  // Compute actual balances for accounts
+  const enrichedAccounts = await Promise.all(
+    (accountBalances.data ?? []).map(async (account) => {
+      const { data: txns } = await supabase
+        .from('transactions')
+        .select('type, amount')
+        .eq('user_id', userId)
+        .eq('account_id', account.id)
+
+      let computed = Number(account.balance)
+      for (const t of txns ?? []) {
+        if (t.type === 'credit') computed += Number(t.amount)
+        else if (t.type === 'debit') computed -= Number(t.amount)
+      }
+
+      return { ...account, computed_balance: Math.round(computed * 100) / 100 }
+    })
+  )
+
   // --- Monthly totals ---
   const currentDebit  = sumByType(monthlyCurrent.data ?? [], 'debit')
   const currentCredit = sumByType(monthlyCurrent.data ?? [], 'credit')
@@ -176,7 +195,7 @@ router.get('/', async (req: AuthRequest, res: Response) => {
     top_merchants:      merchants,
     budgets:            budgetsEnriched,
     recent_transactions: recentTransactions.data ?? [],
-    accounts:           accountBalances.data ?? [],
+    accounts:           enrichedAccounts,
   })
 })
 

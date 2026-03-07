@@ -7,11 +7,11 @@ import { AccountForm }   from '../components/accounts/AccountForm'
 import { useAccounts, Account } from '../hooks/useAccounts'
 
 const TYPE_ICON: Record<string, string> = {
-  cash: '💵', card: '💳', cih: '🏦',
+  cash: '💵', card: '💳', cih: '🏦', awb: '🏦', other: '🏛️',
 }
 
 const TYPE_LABEL: Record<string, string> = {
-  cash: 'Cash', card: 'Card', cih: 'CIH Bank',
+  cash: 'Cash', card: 'Card', cih: 'CIH Bank', awb: 'Attijariwafa Bank', other: 'Other',
 }
 
 export default function Accounts() {
@@ -20,7 +20,7 @@ export default function Accounts() {
   const [editing,    setEditing]    = useState<Account | null>(null)
   const [deleting,   setDeleting]   = useState<Account | null>(null)
 
-  const totalBalance = accounts.reduce((sum, a) => sum + a.balance, 0)
+  const totalBalance = accounts.reduce((sum, a) => sum + (a.computed_balance ?? a.balance), 0)
 
   if (loading) {
     return (
@@ -62,7 +62,7 @@ export default function Accounts() {
               </div>
 
               <p className="text-2xl font-bold mb-1" style={{ color: 'var(--text-primary)' }}>
-                {account.balance.toLocaleString('fr-MA', { minimumFractionDigits: 2 })}
+                {(account.computed_balance ?? account.balance).toLocaleString('fr-MA', { minimumFractionDigits: 2 })}
                 <span className="text-sm font-normal ml-1" style={{ color: 'var(--text-muted)' }}>MAD</span>
               </p>
 

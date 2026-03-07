@@ -2,13 +2,14 @@ import { useState, useEffect, useCallback } from 'react'
 import { api } from '../lib/api'
 
 export interface Account {
-  id:         string
-  name:       string
-  type:       'cash' | 'card' | 'cih' | 'awb' | 'other'
-  currency:   string
-  balance:    number
-  color:      string | null
-  created_at: string
+  id:                string
+  name:              string
+  type:              'cash' | 'card' | 'cih' | 'awb' | 'other'
+  currency:          string
+  balance:           number
+  computed_balance?: number
+  color:             string | null
+  created_at:        string
 }
 
 export function useAccounts() {

@@ -17,14 +17,34 @@ const UpdateAccountSchema = AccountSchema.partial()
 
 // GET /accounts
 router.get('/', async (req: AuthRequest, res: Response) => {
-  const { data, error } = await supabase
+  const { data: accounts, error } = await supabase
     .from('accounts')
     .select('*')
     .eq('user_id', req.user!.id)
     .order('created_at', { ascending: true })
 
   if (error) { res.status(500).json({ error: error.message }); return }
-  res.json(data)
+
+  // Compute actual balance: initial_balance + credits - debits
+  const enriched = await Promise.all(
+    (accounts ?? []).map(async (account) => {
+      const { data: txns } = await supabase
+        .from('transactions')
+        .select('type, amount')
+        .eq('user_id', req.user!.id)
+        .eq('account_id', account.id)
+
+      let computed = Number(account.balance)
+      for (const t of txns ?? []) {
+        if (t.type === 'credit') computed += Number(t.amount)
+        else if (t.type === 'debit') computed -= Number(t.amount)
+      }
+
+      return { ...account, computed_balance: Math.round(computed * 100) / 100 }
+    })
+  )
+
+  res.json(enriched)
 })
 
 // GET /accounts/:id

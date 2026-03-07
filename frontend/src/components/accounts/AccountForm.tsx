@@ -68,7 +68,7 @@ export function AccountForm({ initial, onSubmit, onCancel }: AccountFormProps) {
       />
 
       <Input
-        label="Current balance (MAD)"
+        label="Initial balance (MAD)"
         type="number"
         step="0.01"
         value={balance}
