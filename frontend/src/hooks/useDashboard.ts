@@ -64,6 +64,29 @@ export interface InsightCard {
   severity:    'info' | 'warning' | 'success'
 }
 
+export interface PeriodMonthData {
+  month:  string
+  debit:  number
+  credit: number
+  net:    number
+}
+
+export interface PeriodData {
+  from:              string
+  to:                string
+  total_debit:       number
+  total_credit:      number
+  net:               number
+  avg_monthly_spend: number
+  avg_daily_spend:   number
+  savings_rate:      number
+  num_months:        number
+  total_days:        number
+  highest_month:     PeriodMonthData | null
+  lowest_month:      PeriodMonthData | null
+  months:            PeriodMonthData[]
+}
+
 export function useDashboard(month: string) {
   const [data,     setData]     = useState<DashboardData | null>(null)
   const [trend,    setTrend]    = useState<TrendPoint[]>([])
@@ -93,4 +116,40 @@ export function useDashboard(month: string) {
   useEffect(() => { fetch() }, [fetch])
 
   return { data, trend, insights, loading, error, refetch: fetch }
+}
+
+export function useOldestMonth() {
+  const [oldest, setOldest] = useState<string | null>(null)
+
+  useEffect(() => {
+    api.get('/dashboard/oldest')
+      .then((res) => setOldest(res.data.oldest_month))
+      .catch(() => {})
+  }, [])
+
+  return oldest
+}
+
+export function usePeriod(from: string | null, to: string | null) {
+  const [data,    setData]    = useState<PeriodData | null>(null)
+  const [loading, setLoading] = useState(false)
+  const [error,   setError]   = useState('')
+
+  const fetch = useCallback(async () => {
+    if (!from || !to) return
+    setLoading(true)
+    setError('')
+    try {
+      const res = await api.get('/dashboard/period', { params: { from, to } })
+      setData(res.data)
+    } catch {
+      setError('Failed to load period data')
+    } finally {
+      setLoading(false)
+    }
+  }, [from, to])
+
+  useEffect(() => { fetch() }, [fetch])
+
+  return { data, loading, error }
 }

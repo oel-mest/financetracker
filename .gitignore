@@ -25,3 +25,4 @@ parser/cih.pdf
 
 # Docker volumes (if any local mounts)
 .docker/
+CLAUDE.md

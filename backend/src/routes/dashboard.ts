@@ -214,6 +214,100 @@ router.get('/trend', async (req: AuthRequest, res: Response) => {
   res.json(result)
 })
 
+// GET /dashboard/oldest
+// Returns the oldest transaction month for the user
+router.get('/oldest', async (req: AuthRequest, res: Response) => {
+  const userId = req.user!.id
+
+  const { data } = await supabase
+    .from('transactions')
+    .select('date')
+    .eq('user_id', userId)
+    .order('date', { ascending: true })
+    .limit(1)
+
+  if (!data || data.length === 0) {
+    const now = new Date()
+    res.json({ oldest_month: `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-01` })
+    return
+  }
+
+  const d = new Date(data[0].date)
+  res.json({ oldest_month: `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-01` })
+})
+
+// GET /dashboard/period?from=2025-01-01&to=2025-06-01
+// Returns aggregated stats for a multi-month range (max 12 months)
+router.get('/period', async (req: AuthRequest, res: Response) => {
+  const { from, to } = z.object({
+    from: z.string().regex(/^\d{4}-\d{2}-\d{2}$/),
+    to:   z.string().regex(/^\d{4}-\d{2}-\d{2}$/),
+  }).parse(req.query)
+
+  const userId = req.user!.id
+  const rangeEnd = nextMonth(to)
+
+  // Fetch all transactions in the range
+  const { data: transactions } = await supabase
+    .from('transactions')
+    .select('type, amount, date')
+    .eq('user_id', userId)
+    .gte('date', from)
+    .lt('date', rangeEnd)
+
+  const rows = transactions ?? []
+
+  // Overall totals
+  const totalDebit  = sumByType(rows, 'debit')
+  const totalCredit = sumByType(rows, 'credit')
+
+  // Per-month breakdown
+  const monthlyMap: Record<string, { debit: number; credit: number }> = {}
+  for (const t of rows) {
+    const d = new Date(t.date)
+    const key = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-01`
+    if (!monthlyMap[key]) monthlyMap[key] = { debit: 0, credit: 0 }
+    monthlyMap[key][t.type as 'debit' | 'credit'] += Number(t.amount)
+  }
+
+  const months = Object.entries(monthlyMap)
+    .map(([month, v]) => ({ month, debit: v.debit, credit: v.credit, net: v.credit - v.debit }))
+    .sort((a, b) => a.month.localeCompare(b.month))
+
+  const numMonths = months.length || 1
+
+  // Days in range
+  const fromDate = new Date(from)
+  const toDate   = new Date(rangeEnd)
+  const totalDays = Math.max(1, Math.round((toDate.getTime() - fromDate.getTime()) / (1000 * 60 * 60 * 24)))
+
+  // Highest / lowest spending months
+  const highestMonth = months.length > 0
+    ? months.reduce((max, m) => m.debit > max.debit ? m : max, months[0])
+    : null
+  const lowestMonth = months.length > 0
+    ? months.reduce((min, m) => m.debit < min.debit ? m : min, months[0])
+    : null
+
+  res.json({
+    from,
+    to,
+    total_debit:       totalDebit,
+    total_credit:      totalCredit,
+    net:               totalCredit - totalDebit,
+    avg_monthly_spend: Math.round((totalDebit / numMonths) * 100) / 100,
+    avg_daily_spend:   Math.round((totalDebit / totalDays) * 100) / 100,
+    savings_rate:      totalCredit > 0
+      ? Math.round(((totalCredit - totalDebit) / totalCredit) * 10000) / 100
+      : 0,
+    num_months:        numMonths,
+    total_days:        totalDays,
+    highest_month:     highestMonth,
+    lowest_month:      lowestMonth,
+    months,
+  })
+})
+
 // --- Helpers ---
 function sumByType(rows: { type: string; amount: unknown }[], type: string): number {
   return rows
