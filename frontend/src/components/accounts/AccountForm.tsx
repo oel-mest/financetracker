@@ -63,7 +63,7 @@ export function AccountForm({ initial, onSubmit, onCancel }: AccountFormProps) {
       <Select
         label="Type"
         value={type}
-        onChange={(e) => setType(e.target.value)}
+        onChange={(e) => setType(e.target.value as Account['type'])}
         options={TYPE_OPTIONS}
       />
 
