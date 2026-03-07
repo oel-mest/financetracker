@@ -23,7 +23,8 @@ function generateMonthOptions(oldest: string): { value: string; label: string }[
   const options: { value: string; label: string }[] = []
   const now = new Date()
   const current = new Date(now.getFullYear(), now.getMonth(), 1)
-  const oldestDate = new Date(oldest)
+  const [oy, om] = oldest.split('-').map(Number)
+  const oldestDate = new Date(oy, om - 1, 1)
 
   const d = new Date(current)
   while (d >= oldestDate) {
