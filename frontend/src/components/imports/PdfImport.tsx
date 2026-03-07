@@ -100,15 +100,26 @@ export function PdfImport() {
         </div>
       )}
 
-      <Select
-        label="Bank"
-        value={bank}
-        onChange={(e) => setBank(e.target.value)}
-        options={[
-          { value: 'cih', label: 'CIH Bank' },
-          { value: 'awb', label: 'Attijariwafa Bank' },
-        ]}
-      />
+      <div className="space-y-1.5">
+        <label className="block text-xs font-mono uppercase tracking-wider" style={{ color: 'var(--text-muted)' }}>
+          Bank
+        </label>
+        <select
+          value={bank}
+          onChange={(e) => setBank(e.target.value)}
+          className="w-full border rounded-lg px-3 py-2.5 text-sm focus:outline-none transition-colors"
+          style={{
+            backgroundColor: 'var(--bg-secondary)',
+            borderColor: 'var(--border)',
+            color: 'var(--text-primary)',
+          }}
+        >
+          <option value="cih">CIH Bank</option>
+          <option value="awb">Attijariwafa Bank</option>
+          <option disabled>BMCE Bank of Africa (soon)</option>
+          <option disabled>Banque Populaire (soon)</option>
+        </select>
+      </div>
 
       <Select
         label="Target account"

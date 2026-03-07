@@ -70,7 +70,7 @@ export default function Imports() {
                 onMouseEnter={(e) => { if (tab !== t) e.currentTarget.style.color = 'var(--text-secondary)' }}
                 onMouseLeave={(e) => { if (tab !== t) e.currentTarget.style.color = 'var(--text-muted)' }}
               >
-                {t === 'pdf' ? '🏦  CIH Bank PDF' : '📄  CSV File'}
+                {t === 'pdf' ? '🏦  Bank Statement' : '📄  CSV File'}
               </button>
             ))}
           </div>
