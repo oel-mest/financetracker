@@ -4,7 +4,7 @@ import { api } from '../lib/api'
 export interface Account {
   id:         string
   name:       string
-  type:       'cash' | 'card' | 'cih'
+  type:       'cash' | 'card' | 'cih' | 'awb' | 'other'
   currency:   string
   balance:    number
   color:      string | null
